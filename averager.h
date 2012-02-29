@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <limits>
+#include <cmath>
 
 namespace ibn 	
 {
@@ -216,6 +217,81 @@ namespace ibn
       return sqrt(chi2()/wsum/(N-1)); 
     }
 
+  /*  Physical averager with weights */
+  class phys_averager
+  {
+    averager<double> a;
+    struct data_t
+    {
+      double data;
+      double error;
+      double weight;
+    };
+    std::deque<data_t> D;
+    double wsum;
+    bool iscalc;
+    public:
+    phys_averager(void)
+    {
+      wsum=0;
+      iscalc=false;
+    }
+    /*  Add the data */
+    inline void add(double data, double error, double weight=1)
+    {
+      cout << error << endl;
+      assert(error!=0);
+      data_t d;
+      d.data=data;
+      d.error=error;
+      d.weight=fabs(weight);
+      D.push_back(d);
+      wsum+=weight;
+      iscalc=false;
+    }
+    inline void calculate(void)
+    {
+      //normalize the wwights
+      if(wsum!=0) 
+        for(std::deque<data_t>::iterator p=D.begin(); p!=D.end(); ++p)
+          p->weight/=wsum;
+      cout << wsum << endl;
+      
+      for(std::deque<data_t>::const_iterator p=D.begin(); p!=D.end(); ++p)
+        a.add(p->data,p->weight/(p->error*p->error));
+      iscalc=true;
+    }
+    inline double waverage(void)
+    {
+      if(!iscalc) calculate();
+      return a.waverage();
+    }
+    inline double wsigma_average(void)
+    {
+      if(!iscalc) calculate();
+      return a.wsigma_average();
+    }
+    inline double average(void)
+    {
+      return waverage();
+    }
+    inline double sigma_average(void)
+    {
+      return wsigma_average();
+    }
+    inline double rms(void)
+    {
+      return a.rms();
+    }
+    inline double sigma(void)
+    {
+      return a.sigma();
+    }
+
+
+    inline size_t size(void) { a.size(); }
+
+  };
 }
 
 #endif
