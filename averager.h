@@ -141,7 +141,7 @@ namespace ibn
       //_max=-numeric_limits<T>::max();
       //_front=numeric_limits<T>::quiet_NaN();
       //_back=numeric_limits<T>::quiet_NaN();
-      array.erase(array.begin(),array.end());
+      array.clear();
     }
 
   template <class T, class W>  
@@ -239,8 +239,6 @@ namespace ibn
     /*  Add the data */
     inline void add(double data, double error, double weight=1)
     {
-      cout << error << endl;
-      assert(error!=0);
       data_t d;
       d.data=data;
       d.error=error;
@@ -255,7 +253,6 @@ namespace ibn
       if(wsum!=0) 
         for(std::deque<data_t>::iterator p=D.begin(); p!=D.end(); ++p)
           p->weight/=wsum;
-      cout << wsum << endl;
       
       for(std::deque<data_t>::const_iterator p=D.begin(); p!=D.end(); ++p)
         a.add(p->data,p->weight/(p->error*p->error));
@@ -290,6 +287,12 @@ namespace ibn
 
 
     inline size_t size(void) { a.size(); }
+    inline void reset(void)
+    { 
+      wsum=0; 
+      iscalc=false;
+      D.clear();
+    }
 
   };
 }
