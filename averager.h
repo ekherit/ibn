@@ -253,6 +253,9 @@ namespace ibn
       if(wsum!=0) 
         for(std::deque<data_t>::iterator p=D.begin(); p!=D.end(); ++p)
           p->weight/=wsum;
+      else 
+        for(std::deque<data_t>::iterator p=D.begin(); p!=D.end(); ++p)
+          p->weight=1;
       
       for(std::deque<data_t>::const_iterator p=D.begin(); p!=D.end(); ++p)
         a.add(p->data,p->weight/(p->error*p->error));
@@ -278,20 +281,26 @@ namespace ibn
     }
     inline double rms(void)
     {
+      if(!iscalc) calculate();
       return a.rms();
     }
     inline double sigma(void)
     {
+      if(!iscalc) calculate();
       return a.sigma();
     }
 
 
-    inline size_t size(void) { a.size(); }
+    inline size_t size(void)
+    { 
+      return D.size();
+    }
     inline void reset(void)
     { 
       wsum=0; 
       iscalc=false;
       D.clear();
+      a.reset();
     }
 
   };
