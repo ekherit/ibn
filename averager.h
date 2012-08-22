@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 #include <cmath>
+#include <iostream>
 
 namespace ibn 	
 {
@@ -53,6 +54,12 @@ namespace ibn
           if(r<=0) r=-r;
           return sqrt(r); 
         }
+        inline T wrms(void)	
+        { 
+          double r=waverage2() - sq(waverage());
+          if(r<=0) r=-r;
+          return sqrt(r); 
+        }
         inline T sigma(void)	{ return rms()*sqrt(static_cast<T>(N)/(N-1)); }
         inline T sigma_average(void) { return rms()*sqrt(static_cast<T>(1)/(N-1)); }
 
@@ -61,7 +68,7 @@ namespace ibn
         inline T chi2(void) { return x2wsum - sq(xwsum)/wsum; }
         inline unsigned ndf(void) { return N-1; }
 
-        inline T wsigma(void)	{ return sqrt(chi2()/wsum); }
+        inline T wsigma(void);
         inline T wsigma_average(void);
         inline T scale(void)	{ return chi2()/(N-1); }
         inline T min(void) const { return max_size==0 ? _min : min_element(array.begin(),array.end())->data;}
@@ -146,10 +153,10 @@ namespace ibn
 
   template <class T, class W>  
     inline void averager<T,W>::add( const T & data, W  w)	{
-      if(w<=0) return; //Это ещё вопрос, нужно ли сохранять такие данные с нулевым весом.
+      if(w<=0) return; //п╜я┌п╬ п╣я┴я▒ п╡п╬п©я─п╬я│, п╫я┐п╤п╫п╬ п╩п╦ я│п╬я┘я─п╟п╫я▐я┌я▄ я┌п╟п╨п╦п╣ п╢п╟п╫п╫я▀п╣ я│ п╫я┐п╩п╣п╡я▀п╪ п╡п╣я│п╬п╪.
       if( max_size !=0 )  {
         if( array.size() >= max_size) {
-          //Если массив заполнен, то удалим самые первые данные
+          //п∙я│п╩п╦ п╪п╟я│я│п╦п╡ п╥п╟п©п╬п╩п╫п╣п╫, я┌п╬ я┐п╢п╟п╩п╦п╪ я│п╟п╪я▀п╣ п©п╣я─п╡я▀п╣ п╢п╟п╫п╫я▀п╣
           //xwsum  -= (array.front().data*array.front().weight);
           //x2wsum -= (array.front().data*array.front().data*array.front().weight);
           //wsum  -=  array.front().weight;
@@ -158,11 +165,11 @@ namespace ibn
           //x2sum -= sq(array.front().data);
           //N--; 
           pop(array.back().data, array.back().weight);
-          array.pop_front(); //само удаление
+          array.pop_front(); //я│п╟п╪п╬ я┐п╢п╟п╩п╣п╫п╦п╣
         }
-        array.push_back(pair(data,w)); //запомним новые данные
+        array.push_back(pair(data,w)); //п╥п╟п©п╬п╪п╫п╦п╪ п╫п╬п╡я▀п╣ п╢п╟п╫п╫я▀п╣
       }
-      //добавим новые данные в статистику
+      //п╢п╬п╠п╟п╡п╦п╪ п╫п╬п╡я▀п╣ п╢п╟п╫п╫я▀п╣ п╡ я│я┌п╟я┌п╦я│я┌п╦п╨я┐
       xwsum+=(data*w);
       x2wsum+=(data*data*w);
       wsum+=w;
@@ -184,7 +191,7 @@ namespace ibn
       if( max_size !=0 )  {
         if(N==0) return;
         pop(array.back().data, array.back().weight);
-        array.pop_back(); //само удаление
+        array.pop_back(); //я│п╟п╪п╬ я┐п╢п╟п╩п╣п╫п╦п╣
       }
     }
 
@@ -199,7 +206,8 @@ namespace ibn
     }
 
   template <class T, class W>  
-    inline void averager<T,W>::pop(const T & data, W weight)	{
+    inline void averager<T,W>::pop(const T & data, W weight)
+    {
       if(N==0) return;
       xwsum  -= (data*weight);
       x2wsum -= (data*data*weight);
@@ -209,12 +217,35 @@ namespace ibn
       N--;
     }
 
+  template <class T, class W>
+    inline T averager<T,W>::wsigma(void)	
+    { 
+      //std::cout << "N=" << N <<  ", chi2=" << chi2() << ", wsum=" << wsum << ", ave=" << waverage() << std::endl; 
+      if(N==0) return 1e100;
+      if(N==1) return 1./sqrt(wsum);
+      return sqrt(fabs(chi2())/wsum); 
+    }
   template <class T, class W> 
-    inline T averager<T,W>::wsigma_average(void)	{ 
-      if (N<=0)	{ 
+    inline T averager<T,W>::wsigma_average(void)
+    { 
+      if (N==0)	{ return 1e100;}
+      double er = 1./sqrt(wsum);
+      if(false)
+      {
+        using namespace std;
+        cout << "N=" << N << endl;
+        cout << "waverage="<< waverage() << endl;
+        cout << "wsum=" << wsum << endl;
+        cout << "chi2=" << chi2() << endl;
+        cout << "wrsm=" << wrms() << endl;
+        cout << "er=" << er << endl;
+        cout << "scale=" << scale() << endl;
       }
-      if(N==1 || scale() <=1.0 )  return 1./sqrt(wsum);
-      return sqrt(chi2()/wsum/(N-1)); 
+      if (N==1) return er;
+      double s = scale();
+      if(s <=1.0)  return er;
+      //if(fabs(waverage()-1837.94)<0.02)
+      return er; 
     }
 
   /*  Physical averager with weights */
@@ -226,6 +257,7 @@ namespace ibn
       double data;
       double error;
       double weight;
+      double norm_weight; //normalized weight
     };
     std::deque<data_t> D;
     double wsum;
@@ -243,22 +275,33 @@ namespace ibn
       d.data=data;
       d.error=error;
       d.weight=fabs(weight);
+      d.norm_weight=1;
       D.push_back(d);
       wsum+=weight;
       iscalc=false;
     }
     inline void calculate(void)
     {
+      a.reset();
       //normalize the wwights
-      if(wsum!=0) 
+      if(wsum==0) 
+      {
         for(std::deque<data_t>::iterator p=D.begin(); p!=D.end(); ++p)
-          p->weight/=wsum;
+          p->norm_weight=1;
+      }
       else 
+      {
+        size_t N=size();
         for(std::deque<data_t>::iterator p=D.begin(); p!=D.end(); ++p)
-          p->weight=1;
+          p->norm_weight=p->weight/wsum*N;
+      }
       
       for(std::deque<data_t>::const_iterator p=D.begin(); p!=D.end(); ++p)
-        a.add(p->data,p->weight/(p->error*p->error));
+      {
+        //std::cout << "ibn:averager " << p->data << " " << p->weight << " " << p->error << std::endl;
+        a.add(p->data,p->norm_weight/(p->error*p->error));
+        //a.add(p->data,1./(p->error*p->error));
+      }
       iscalc=true;
     }
     inline double waverage(void)
@@ -287,7 +330,12 @@ namespace ibn
     inline double sigma(void)
     {
       if(!iscalc) calculate();
-      return a.sigma();
+      return a.wsigma();
+    }
+    inline double wsigma(void)
+    {
+      if(!iscalc) calculate();
+      return a.wsigma();
     }
 
 
