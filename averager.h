@@ -242,9 +242,9 @@ namespace ibn
         cout << "scale=" << scale() << endl;
       }
       if (N==1) return er;
-      double s = scale();
-      if(s <=1.0)  return er;
-      //if(fabs(waverage()-1837.94)<0.02)
+      //else er*=sqrt(double(N)/(double(N)-1.));
+      //double s = scale();
+      //if(s > 1.0) er*=s;
       return er; 
     }
 
@@ -298,9 +298,7 @@ namespace ibn
       
       for(std::deque<data_t>::const_iterator p=D.begin(); p!=D.end(); ++p)
       {
-        //std::cout << "ibn:averager " << p->data << " " << p->weight << " " << p->error << std::endl;
         a.add(p->data,p->norm_weight/(p->error*p->error));
-        //a.add(p->data,1./(p->error*p->error));
       }
       iscalc=true;
     }
