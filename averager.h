@@ -38,6 +38,7 @@ namespace ibn
         inline void reset(void); 
         inline void resize(unsigned p=0) { max_size=p; reset(); }
         inline void add(const T &, W w=1);
+        inline void operator()(const T & t, W w=1) {add(t,w);};
 
         inline void pop_back(void); //delete last element
         inline void pop_front(void); //delete first element
@@ -65,12 +66,12 @@ namespace ibn
 
         inline T waverage(void) { return xwsum/wsum; }
         inline T waverage2(void) { return x2wsum/wsum; }
-        inline T chi2(void) { return x2wsum - sq(xwsum)/wsum; }
+        inline T chi2(void) { return x2wsum - sq(xwsum)/wsum; } //agreament with PDG method: chi2 = sum wi (Mx - xi)^2
         inline unsigned ndf(void) { return N-1; }
 
         inline T wsigma(void);
         inline T wsigma_average(void);
-        inline T scale(void)	{ return chi2()/(N-1); }
+        inline T scale(void)	{ return chi2()/std::max(1,int(N)-1); }
         inline T min(void) const { return max_size==0 ? _min : min_element(array.begin(),array.end())->data;}
         inline T max(void) const { return max_size==0 ? _max : max_element(array.begin(),array.end())->data;}
         inline T front(void) const { return max_size==0 ? _front : array.front().data; }
@@ -152,7 +153,8 @@ namespace ibn
     }
 
   template <class T, class W>  
-    inline void averager<T,W>::add( const T & data, W  w)	{
+    inline void averager<T,W>::add( const T & data, W  w)
+    {
       if(w<=0) return; //Это ещё вопрос, нужно ли сохранять такие данные с нулевым весом.
       if( max_size !=0 )  {
         if( array.size() >= max_size) {
@@ -187,8 +189,10 @@ namespace ibn
     }
 
   template <class T, class W>  
-    inline void averager<T,W>::pop_back(void)	{
-      if( max_size !=0 )  {
+    inline void averager<T,W>::pop_back(void)
+    {
+      if( max_size !=0 )
+      {
         if(N==0) return;
         pop(array.back().data, array.back().weight);
         array.pop_back(); //само удаление
@@ -196,8 +200,10 @@ namespace ibn
     }
 
   template <class T, class W>  
-    inline void averager<T,W>::pop_front(void)	{
-      if( max_size !=0 )  {
+    inline void averager<T,W>::pop_front(void)
+    {
+      if( max_size !=0 )
+      {
         //Remove first data
         if(N==0) return;
         pop(array.front().data, array.front().weight);
@@ -221,14 +227,14 @@ namespace ibn
     inline T averager<T,W>::wsigma(void)	
     { 
       //std::cout << "N=" << N <<  ", chi2=" << chi2() << ", wsum=" << wsum << ", ave=" << waverage() << std::endl; 
-      if(N==0) return 1e100;
+      if(N==0) return std::numeric_limits<double>::max();;
       if(N==1) return 1./sqrt(wsum);
       return sqrt(fabs(chi2())/wsum); 
     }
   template <class T, class W> 
     inline T averager<T,W>::wsigma_average(void)
     { 
-      if (N==0)	{ return 1e100;}
+      if (N==0)	{ return std::numeric_limits<double>::max();}
       double er = 1./sqrt(wsum);
       if(false)
       {
@@ -334,6 +340,12 @@ namespace ibn
     {
       if(!iscalc) calculate();
       return a.wsigma();
+    }
+
+    inline double scale(void)
+    {
+      return sqrt(a.scale());
+
     }
 
 

@@ -26,7 +26,6 @@ namespace ibn
   {
     class compton
     {
-      const double ME=0.510998928; // ± 0.000000011 electron mass PDG 2013
       public:
       double Eg; //energy of gamma quant, MeV
       double Ee; //energy of electron beam, MeV
@@ -35,7 +34,7 @@ namespace ibn
       double gamma;
       double V; //velocity of electron in lab frame
       double omega; //photon energy in r.f. of electron
-      double chi; //zhestkost parameter = omega/me
+      double chi; //zhestkost parameter = omega/me (in the electron rest frame)
       //Scattered parameters of gamma quant 
       double kx;
       double ky;
@@ -93,11 +92,20 @@ namespace ibn
         return 1./x+x+ sq(b/chi) - 2*b/chi - Pe*Pg*polarized_cross_section(x,phi);
       }
 
+      double operator()(double x)
+      {
+        return cross_section(x,0);
+      }
+
       double polarized_cross_section(double x, double phi)
       {
         return sin(phi)*(1.0-x)*sinx(x);
       }
 
+
+			//calculate cos(theta) as function of undimentional parameter
+			//x = omega'/omega (photon energy factor)
+			//check this formula at 2014-04-09
       double cosx(double x)
       {
         return (1./x-1.)/chi-1.0;
@@ -105,6 +113,11 @@ namespace ibn
       double sinx(double x)
       {
         return sqrt(1.0 - sq(cosx(x)));
+      }
+
+      double xcos(double c)
+      {
+        return 1./(1.+chi*(1.+c));
       }
 
       double cos_rf(double cos_lf) //cosine in rest frame calculated from lab frame
@@ -115,6 +128,11 @@ namespace ibn
       double cos_lf(double cos_rf) //cosine in rest frame calculated from lab frame
       {
         return (cos_rf + V)/(1.+V*cos_rf);
+      }
+
+      double sin_lf(void)
+      {
+        return sqrt(sq(kx/E) + sq(ky/E));
       }
 
       template <class UniformFunction> 
@@ -145,7 +163,11 @@ namespace ibn
           ky = E*s_lf*sin(phi);
           kz = E*c_lf; 
         }
+      private:
+      const double ME=0.510998928; // ± 0.000000011 electron mass PDG 2013
     };
+
+    
   }
 }
 #endif

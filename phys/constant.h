@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  math.h
+ *       Filename:  constant.h
  *
- *    Description:  My own math functions
+ *    Description:  Fundamental constants
  *
  *        Version:  1.0
- *        Created:  25.02.2012 20:25:52
+ *        Created:  16.09.2013 16:21:27
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -15,14 +15,19 @@
  *
  * =====================================================================================
  */
+#ifndef IBN_PHYS_CONSTANT_H
+#define IBN_PHYS_CONSTANT_H
 
-#ifndef IBN_MATH_H
-#define IBN_MATH_H
-#include <cmath>
 namespace ibn
 {
-  inline double sq(double x) { return x*x;}
-  inline double cb(double x) { return x*x*x;}
-  inline double rho(double x , double y) { return sqrt(sq(x)+sq(y)); }
+  namespace phys
+  {
+    const double m_e = 0.410998918; //MeV
+    const double r_e = 2.817940325e-15; //m
+    const double c  = 299792458; //m/s
+    const double hc = 197.326968e-15; //MeV*m
+    const double e_SI = 1.60217653e-19;//C electron charge in SI
+  }
 }
 #endif
+
