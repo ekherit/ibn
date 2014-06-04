@@ -166,7 +166,7 @@ namespace ibn
           //xsum -= array.front().data;
           //x2sum -= sq(array.front().data);
           //N--; 
-          pop(array.back().data, array.back().weight);
+          pop(array.front().data, array.front().weight);
           array.pop_front(); //само удаление
         }
         array.push_back(pair(data,w)); //запомним новые данные
