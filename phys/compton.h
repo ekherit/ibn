@@ -30,6 +30,9 @@ namespace ibn
       double Eg; //energy of gamma quant, MeV
       double Ee; //energy of electron beam, MeV
       double Pe; //electron polarization
+      double Sx; //electron x polarization
+      double Sy; //electron y polarization
+      double Sz; //electron z polarization
       double Pg; //photon circular polarization
       double gamma;
       double V; //velocity of electron in lab frame
@@ -77,6 +80,14 @@ namespace ibn
       {
         Pe=pe;
       }
+
+      void SetElectronPolarization(double sx,  double sy,  double sz) 
+      {
+				double mod = sqrt(sq(sx)+sq(sy)+sq(sz));
+				Sx = sx/mod;
+				Sy = sy/mod;
+				Sz = sz/mod;
+      }
       void SetPolarization(double pe, double pg)
       {
         SetElectronPolarization(pe);
@@ -99,7 +110,7 @@ namespace ibn
 
       double polarized_cross_section(double x, double phi)
       {
-        return sin(phi)*(1.0-x)*sinx(x);
+        return (1.0-x)*(Sz*cosx(x)  + Sy*sin(phi)*sinx(x) + Sx*cos(phi)*sinx(x));
       }
 
 
