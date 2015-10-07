@@ -48,6 +48,23 @@ namespace ibn
         inline averager & operator+=(T data) { add(data); return *this;}
 
         inline T average(void)	{ return xsum/N; }
+        inline T average(unsigned begin,  unsigned end)
+				{
+					unsigned i=0;
+					T theSum=0;
+					unsigned theN=0;
+					for(auto & d : array)
+					{
+						if(i>=begin && i<end)
+						{
+							theSum+=d.data;
+							theN++;
+						}
+						i++;
+					}
+					return theSum/theN;
+				};
+
         inline T average2(void) { return x2sum/N; }
         inline T rms(void)	
         { 
