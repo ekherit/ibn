@@ -37,6 +37,7 @@ namespace ibn
         averager(unsigned p=0) { resize(p); }
         inline void reset(void); 
         inline void resize(unsigned p=0) { max_size=p; reset(); }
+				inline bool full(void) { return max_size == 0 ? false : N==max_size; }
         inline void add(const T &, W w=1);
         inline void operator()(const T & t, W w=1) {add(t,w);};
 
@@ -56,6 +57,24 @@ namespace ibn
 					for(auto & d : array)
 					{
 						if(i>=begin && i<end)
+						{
+							theSum+=d.data;
+							theN++;
+						}
+						i++;
+					}
+					return theSum/theN;
+				};
+
+        inline T average(unsigned last_n)
+				{
+					unsigned i=0;
+					T theSum=0;
+					unsigned theN=0;
+					unsigned begin = N -last_n > 0 ? N-last_n : 0;
+					for(auto & d : array)
+					{
+						if(i>=begin && i<N)
 						{
 							theSum+=d.data;
 							theN++;
