@@ -6,7 +6,7 @@
 #include <cmath>
 using namespace std;
 /* 
-   Здесь собраны различные алгоритмы для вычисления интеграла 
+   п≈п╢п╣я│я▄ я│п╬п╠я─п╟п╫я▀ я─п╟п╥п╩п╦я┤п╫я▀п╣ п╟п╩пЁп╬я─п╦я┌п╪я▀ п╢п╩я▐ п╡я▀я┤п╦я│п╩п╣п╫п╦я▐ п╦п╫я┌п╣пЁя─п╟п╩п╟ 
    */
 
 
@@ -16,7 +16,7 @@ namespace ibn
 {
 
 
-  /* интегралл прямоугольниками */
+  /* п╦п╫я┌п╣пЁя─п╟п╩п╩ п©я─я▐п╪п╬я┐пЁп╬п╩я▄п╫п╦п╨п╟п╪п╦ */
   template <class F> double integrate0(F  f, double min, double max, double step)
   {
     double sum=0;
@@ -26,7 +26,7 @@ namespace ibn
     return sum*step;
   }
 
-  // интегралл трапециями 
+  // п╦п╫я┌п╣пЁя─п╟п╩п╩ я┌я─п╟п©п╣я├п╦я▐п╪п╦ 
   template <class F> double integrate1(F  f, double min, double max, double step)
   {
     double sum=0;
@@ -37,7 +37,7 @@ namespace ibn
     return sum*step/2.;
   }
 
-  // интеграл параболами
+  // п╦п╫я┌п╣пЁя─п╟п╩ п©п╟я─п╟п╠п╬п╩п╟п╪п╦
   template <class F> double integrate2(F  f, double min, double max, double step)
   {
     double sum=0;
@@ -49,7 +49,7 @@ namespace ibn
   }
 
 
-  // интеграл с помощью полинома третьей степени
+  // п╦п╫я┌п╣пЁя─п╟п╩ я│ п©п╬п╪п╬я┴я▄я▌ п©п╬п╩п╦п╫п╬п╪п╟ я┌я─п╣я┌я▄п╣п╧ я│я┌п╣п©п╣п╫п╦
   template <class F> double integrate3(F  f, double min, double max, double step)
   {
     double sum=0;
@@ -61,8 +61,8 @@ namespace ibn
   }
 
 
-  //алгоритм из cernlib
-  //интеграл 16-ти и 8 точеченой гауссовой квадратурой.
+  //п╟п╩пЁп╬я─п╦я┌п╪ п╦п╥ cernlib
+  //п╦п╫я┌п╣пЁя─п╟п╩ 16-я┌п╦ п╦ 8 я┌п╬я┤п╣я┤п╣п╫п╬п╧ пЁп╟я┐я│я│п╬п╡п╬п╧ п╨п╡п╟п╢я─п╟я┌я┐я─п╬п╧.
   template <class F> double dgaus(F  func, double a, double b, double epsilon)
   {
     const double Z1 = 1;
@@ -85,7 +85,7 @@ namespace ibn
       0.18260341504492359,  0.18945061045506850
     };
 
-    register double h, aconst, bb, aa, c1, c2, u, s8, s16, f1, f2;
+    double h, aconst, bb, aa, c1, c2, u, s8, s16, f1, f2;
     double xx[1];
     int i;
 
@@ -133,7 +133,7 @@ CASE2:
   }
 
 
-  //Многомерный интеграл
+  //п°п╫п╬пЁп╬п╪п╣я─п╫я▀п╧ п╦п╫я┌п╣пЁя─п╟п╩
   template <class F> double dgaus(F  func, double *a, double *b, double eps, double &relerr)
   {
     double ctr[15], wth[15], wthl[15], z[15];
