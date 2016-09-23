@@ -302,13 +302,12 @@ namespace ibn
       double norm_weight; //normalized weight
     };
     std::deque<data_t> D;
-    double wsum;
-    bool iscalc;
+    double wsum=0;
+    bool iscalc=false;
+    bool has_zero_data_error=false;
     public:
     phys_averager(void)
     {
-      wsum=0;
-      iscalc=false;
     }
     /*  Add the data */
     inline void add(double data, double error, double weight=1)
@@ -321,6 +320,9 @@ namespace ibn
       D.push_back(d);
       wsum+=weight;
       iscalc=false;
+      if(d.error==0) has_zero_data_error = true;
+      //если хотя бы одно из данных имеет нулевую ошибку
+      //все остальные данные с конечными ошибками будут игнорироваться
     }
     inline void calculate(void)
     {
@@ -337,10 +339,10 @@ namespace ibn
         for(std::deque<data_t>::iterator p=D.begin(); p!=D.end(); ++p)
           p->norm_weight=p->weight/wsum*N;
       }
-      
       for(std::deque<data_t>::const_iterator p=D.begin(); p!=D.end(); ++p)
       {
-        a.add(p->data,p->norm_weight/(p->error*p->error));
+        if(has_zero_data_error) a.add(p->data,p->norm_weight);
+        else a.add(p->data,p->norm_weight/(p->error*p->error));
       }
       iscalc=true;
     }
