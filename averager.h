@@ -287,7 +287,10 @@ namespace ibn
       //else er*=sqrt(double(N)/(double(N)-1.));
       //double s = scale();
       //if(s > 1.0) er*=s;
-      return er; 
+      double result =  sqrt(chi2())/wsum; 
+      //if(std::isnan(result) || std::isinf(result)) return 0;
+      //return result;
+      return er;
     }
 
   /*  Physical averager with weights */
