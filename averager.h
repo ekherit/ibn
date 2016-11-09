@@ -37,6 +37,7 @@ namespace ibn
         averager(unsigned p=0) { resize(p); }
         inline void reset(void); 
         inline void resize(unsigned p=0) { max_size=p; reset(); }
+				inline bool full(void) { return max_size == 0 ? false : N==max_size; }
         inline void add(const T &, W w=1);
         inline void operator()(const T & t, W w=1) {add(t,w);};
 
@@ -48,6 +49,41 @@ namespace ibn
         inline averager & operator+=(T data) { add(data); return *this;}
 
         inline T average(void)	{ return xsum/N; }
+        inline T average(unsigned begin,  unsigned end)
+				{
+					unsigned i=0;
+					T theSum=0;
+					unsigned theN=0;
+					for(auto & d : array)
+					{
+						if(i>=begin && i<end)
+						{
+							theSum+=d.data;
+							theN++;
+						}
+						i++;
+					}
+					return theSum/theN;
+				};
+
+        inline T average(unsigned last_n)
+				{
+					unsigned i=0;
+					T theSum=0;
+					unsigned theN=0;
+					unsigned begin = N -last_n > 0 ? N-last_n : 0;
+					for(auto & d : array)
+					{
+						if(i>=begin && i<N)
+						{
+							theSum+=d.data;
+							theN++;
+						}
+						i++;
+					}
+					return theSum/theN;
+				};
+
         inline T average2(void) { return x2sum/N; }
         inline T rms(void)	
         { 
@@ -251,7 +287,10 @@ namespace ibn
       //else er*=sqrt(double(N)/(double(N)-1.));
       //double s = scale();
       //if(s > 1.0) er*=s;
-      return er; 
+      double result =  sqrt(chi2())/wsum; 
+      //if(std::isnan(result) || std::isinf(result)) return 0;
+      //return result;
+      return er;
     }
 
   /*  Physical averager with weights */
@@ -266,13 +305,12 @@ namespace ibn
       double norm_weight; //normalized weight
     };
     std::deque<data_t> D;
-    double wsum;
-    bool iscalc;
+    double wsum=0;
+    bool iscalc=false;
+    bool has_zero_data_error=false;
     public:
     phys_averager(void)
     {
-      wsum=0;
-      iscalc=false;
     }
     /*  Add the data */
     inline void add(double data, double error, double weight=1)
@@ -285,6 +323,9 @@ namespace ibn
       D.push_back(d);
       wsum+=weight;
       iscalc=false;
+      if(d.error==0) has_zero_data_error = true;
+      //если хотя бы одно из данных имеет нулевую ошибку
+      //все остальные данные с конечными ошибками будут игнорироваться
     }
     inline void calculate(void)
     {
@@ -301,10 +342,10 @@ namespace ibn
         for(std::deque<data_t>::iterator p=D.begin(); p!=D.end(); ++p)
           p->norm_weight=p->weight/wsum*N;
       }
-      
       for(std::deque<data_t>::const_iterator p=D.begin(); p!=D.end(); ++p)
       {
-        a.add(p->data,p->norm_weight/(p->error*p->error));
+        if(has_zero_data_error) a.add(p->data,p->norm_weight);
+        else a.add(p->data,p->norm_weight/(p->error*p->error));
       }
       iscalc=true;
     }
