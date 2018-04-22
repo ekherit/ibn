@@ -79,6 +79,9 @@ namespace ibn
       void SetElectronPolarization(double pe) 
       {
         Pe=pe;
+	Sx=0;
+	Sz=0;
+	Sy=pe;
       }
 
       void SetElectronPolarization(double sx,  double sy,  double sz) 
