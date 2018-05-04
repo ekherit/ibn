@@ -34,7 +34,7 @@ namespace ibn
         typedef typename Data_t::const_reverse_iterator const_reverse_iterator;
         Data_t array;
 
-        averager(unsigned p=0) { resize(p); }
+        explicit averager(unsigned p=0) { resize(p); }
         inline void reset(void); 
         inline void resize(unsigned p=0) { max_size=p; reset(); }
 				inline bool full(void) { return max_size == 0 ? false : N==max_size; }
@@ -287,7 +287,7 @@ namespace ibn
       //else er*=sqrt(double(N)/(double(N)-1.));
       //double s = scale();
       //if(s > 1.0) er*=s;
-      double result =  sqrt(chi2())/wsum; 
+      //double result =  sqrt(chi2())/wsum; 
       //if(std::isnan(result) || std::isinf(result)) return 0;
       //return result;
       return er;
