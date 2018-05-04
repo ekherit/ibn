@@ -134,10 +134,10 @@ CASE2:
 
 
   //Многомерный интеграл
-  template <class F> double dgaus(F  func, double *a, double *b, double eps, double &relerr)
+  template <class F> double dgaus(F  func, int n, double *a, double *b, double eps, double &relerr)
   {
     double ctr[15], wth[15], wthl[15], z[15];
-    int n = func.dimension();
+    //int n = func.dimension();
     const double xl2 = 0.358568582800318073;
     const double xl4 = 0.948683298050513796;
     const double xl5 = 0.688247201611685289;
