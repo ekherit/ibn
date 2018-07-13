@@ -402,6 +402,8 @@ namespace ibn
       a.reset();
     }
 
+    inline double get_wsum(void) const  { return wsum; } 
+
   };
 }
 
