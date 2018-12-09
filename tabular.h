@@ -28,14 +28,15 @@ class tabular
     tabular(std::string format)
     {
       //format like %10.2fx10
-      std::regex re(R"(%(\d+)(\.\d+f)?(\*\d+)?)");
+      std::regex cell_re(R"((%(\d+)(?:\.\d+)?[[:alpha:]])(?:\*(\d+))?)");
       std::regex times_re(R"(\*(\d+))");
       std::regex float_re(R"(\.\d+f)");
       //calculate numbe of sell
       //
-      for (std::sregex_iterator it(format.begin(), format.end(),re); it != std::sregex_iterator(); ++it)
+      for (std::sregex_iterator it(format.begin(), format.end(),cell_re); it != std::sregex_iterator(); ++it)
       {
         std::cout << "total match string" << it->str() << std::endl;
+        for(auto & s : *it) std::cout << s << std::endl;
         if(it->size()>1)  //ok found
         {
           int repeat=1;
