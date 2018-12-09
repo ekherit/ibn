@@ -133,7 +133,10 @@ class tabular
       for( auto & c : cells)
       {
         std::string line="─";
-        if(c.left_border == "│" || c.left_border == "|") 
+        std::regex  l_e(R"(│|[^\]*\|[^\|]*)");
+        std::smatch sm;
+        if(std::regex_search(c.left_border, sm, l_e))
+        //if(c.left_border == "│" || c.left_border == "|") 
         {
           if( idx==0) os << "├";
           else  os << "┼";
