@@ -63,6 +63,9 @@ namespace ibn
   template< class Cs> void print( const Cs & C);
 };
 
+/**************************************************************************/
+/*************** IMPLEMENTATION ******************************************/
+
 #include <vector> //need for realization
 
 //for debug
@@ -72,7 +75,6 @@ namespace ibn
 namespace ibn
 {
 
-  /*************** IMPLEMENTATION ******************************************/
   template< class Ps>
     inline void print_pairs( const Ps & P)
     {
@@ -128,6 +130,86 @@ namespace ibn
       std::cout << "}";
     };
 
+
+  template < 
+    class ItA,   //iterator in the first container of objects type A
+    class ItB,   //iterator in the second container of object type B
+    class CombinationList>     //result contains all combinations of pairs:  
+                 //   { (a1,b1) (a2,b2) (a3,b3) }
+                 //   { (a1,b2) (a2,b1) (a3,b3) }
+                 //   ...
+      inline auto  make_unique_pairs_impl
+      (
+       ItA a_begin, ItA a_end, 
+       ItB b_begin, ItB b_end 
+      ) -> CombinationList
+      {
+        //this is the type of pair's items (A,B)
+        using A = typename std::iterator_traits<ItA>::value_type; 
+        using B = typename std::iterator_traits<ItB>::value_type;
+
+        CombinationList result;
+
+        //the end of recursion
+        if( b_begin==b_end || a_begin==a_end) return result;
+
+        //if( result.empty() ) result.push_back( typename R::value_type() ); //initial start
+        //typename R::value_type begin_combination; 
+        //std::copy(result.back().begin(),result.back().end(), std::back_inserter(begin_combination));
+        //
+        static int depth=-1;
+        depth++;
+        static auto BEGIN_A = a_begin;
+        auto shift = [](int d){for(int i=0;i<d;++i) std::cout << "     ";};
+        shift(depth);
+        std::cout << "depth = " << depth;
+        print_array(".  Total array: ", BEGIN_A, a_end);
+        std::cout << ",  b_begin == b_end = " << (b_begin == b_end) << std::endl;
+        std::cout << std::endl;
+        int a_idx=0;
+        ItA  first   = a_begin;
+        ItB  second  = b_begin;
+        for(auto a = a_begin; a!=a_end; ++a)
+        {
+          shift(depth);
+          std::cout << "   a_idx = " << a_idx << " ";
+          print_array("swap ", a_begin, a_end);
+
+          if(a != a_begin) std::swap(*a, *a_begin);
+
+          print_array(" -> ", a_begin, a_end);
+          std::cout << std::endl;
+          //R tmp{typename R::value_type({std::pair<A,B> (*a_begin, *b_begin)})};
+          shift(depth);
+          std::cout << "   depth = " << depth <<" a_idx=" << a_idx << " pair = " << *first <<  *second<< std::endl;
+          shift(depth);
+          std::cout << "   a_begin = " << &(*a_begin) << " next(a_begin) = " << &(*std::next(a_begin)) << "  b_begin = " << &(*b_begin) <<"  next(b_begin) = " << &(*std::next(b_begin)) << std::endl;
+          std::cout << "   a_end = " << &(*a_end) << " b_end = " << &(*b_end) << std::endl;
+
+          CombinationList local_result = make_unique_pairs_impl<ItA,ItB,CombinationList>(next(a_begin), a_end, next(b_begin), b_end);
+          if(local_result.empty())  local_result.push_back(typename CombinationList::value_type()); 
+          //now save the local_result to total result
+          for(const auto & pair_list: local_result)
+          {
+            //start new combination
+            result.push_back(typename CombinationList::value_type());
+            result.back().push_back(std::pair<A,B>(*first,*second));
+            std::copy(pair_list.begin(), pair_list.end(),std::back_inserter(result.back()));
+          }
+
+          shift(depth);
+          print_array("   back swap ", a_begin, a_end);
+
+          if(a!=a_begin) std::swap(*a, *a_begin);//swap back
+          //if(a!=a_begin) std::swap(*a, *a_begin); //swap back
+          print_array(" -> ", a_begin, a_end);
+          std::cout << std::endl;
+          a_idx++;
+        }
+        depth--;
+        return result;
+      } 
+
   template < 
     class ItA,   //iterator in the first container of objects type A
     class ItB,   //iterator in the second container of object type B
@@ -135,7 +217,7 @@ namespace ibn
                  //   { (a1,b1) (a2,b2) (a3,b3) }
                  //   { (a1,b2) (a2,b1) (a3,b3) }
                  //   ...
-      inline void  make_unique_pairs
+      inline void  make_unique_pairs_old
       (
        ItA a_begin, ItA a_end, 
        ItB b_begin, ItB b_end, 
@@ -171,7 +253,7 @@ namespace ibn
           R tmp{typename R::value_type({std::pair<A,B> (*a_begin, *b_begin)})};
           shift(depth);
           std::cout << "   depth = " << depth <<" a_idx=" << a_idx << " b_idx = " << " pair = " << *a_begin <<  *b_begin<< std::endl;
-          make_unique_pairs(next(a_begin), a_end, next(b_begin), b_end, tmp);
+          make_unique_pairs_old(next(a_begin), a_end, next(b_begin), b_end, tmp);
           for(auto it = tmp.begin(); it!=tmp.end(); ++it)
           {
             std::copy(it->begin(), it->end(),std::back_inserter(result.back()));
@@ -186,6 +268,46 @@ namespace ibn
         }
         depth--;
       } 
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  make_unique_pairs
+ *  Description:  Make all combination of unique pairs from two arrays of size NA and NB any type
+ *  The number of pairs in one combination  is min(NA,NB)
+ *  The total number of all such combinations is NA!/(NA-NB)! if NA<=NB
+ *  My algorithm use swap of objects, do a lot of memory allocations for the  result
+ * =====================================================================================
+ */
+  template < class ItA,   class ItB,   class CombinationList>     
+    inline void  make_unique_pairs
+    (
+     ItA a_begin, ItA a_end, 
+     ItB b_begin, ItB b_end, 
+     CombinationList & result
+    )
+    {
+      result = make_unique_pairs_impl<ItA,ItB,CombinationList>(a_begin,a_end,b_begin,b_end);
+    }
+
+  template< class It, class CombinationList> 
+    inline void make_unique_pairs(It it_begin, It it_end, CombinationList & result);
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  make_unique_pairs
+ *  Description:  Make all combination of unique pairs from two arrays of size NA and NB any type
+ *  The number of pairs in one combination  is min(NA,NB)
+ *  The total number of all such combinations is NA!/(NA-NB)! if NA<=NB
+ *  My algorithm use swap of objects, do a lot of memory allocations for the  result
+ * =====================================================================================
+ */
+  template < class ItA,   class ItB,   class R>     
+    inline void  make_unique_pairs
+    (
+     ItA a_begin, ItA a_end, 
+     ItB b_begin, ItB b_end, 
+     R & result
+    );
 
 
   template< class It, class CombinationList> 
