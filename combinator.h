@@ -194,8 +194,8 @@ namespace ibn
       result = make_unique_pairs_impl<ItA,ItB,CombinationList>(a_begin,a_end,b_begin,b_end);
     }
 
-  template< class It, class CombinationList> 
-    inline void make_unique_pairs(It it_begin, It it_end, CombinationList & result);
+//  template< class It, class CombinationList> 
+//    inline void make_unique_pairs(It it_begin, It it_end, CombinationList & result);
 
 
 
@@ -361,6 +361,96 @@ namespace ibn
         if( std::next(it)!=e ) std::cout << ',';
       }
       std::cout << "}";
+    };
+
+
+  template<class A>
+    class pair_combinator
+    {
+      //using A = typename std::iterator_traits<It>::value_type; 
+      using Combination = std::vector< std::pair<A*, A*> >;
+      const size_t N;
+      const size_t NP; //Number of pairs
+      Combination result;
+      //the pairs must be in the memory in the order: (first,second),(first,second)
+      A ** state;
+      std::vector<int> reg; //register
+      int depth=0;
+      long count = 0; //the combination ID;
+      bool end = false;
+      public:
+
+      template<class It>
+      pair_combinator(It it_begin, It it_end) : N(std::distance(it_begin, it_end)), NP(N/2)
+      {
+        reg.resize(NP,0);
+        result.reserve(NP+1); //add 1 to work with odd numbers potentially
+        result.resize(NP);
+        state =  &(result[0].first);
+        int idx=0;
+        for(auto it = it_begin; it!=it_end; ++it) state[idx++] = &(*it);
+        depth=NP-2;
+        //for(int i=0;i<NP;i++)
+        //{
+        //  reg[i] = 2*i+1;
+        //}
+        count = 1;
+      }
+
+      void print_state(std::string s="")
+      {
+        std::cout << std::setw(40) << s << "depth="<< depth << "  reg=";
+        for(int i=0;i<NP;++i) std::cout << reg[i];
+        std::cout << "  state=";
+        for(const auto & p: result)
+        {
+          std::cout << *p.first << *p.second << " ";
+        }
+        std::cout << std::endl;
+      }
+
+      bool next(void)
+      {
+        if(depth<0) return false;
+        while(depth<NP-1)
+        {
+          //swap back previouse swap
+          int second = 2*depth+1;
+          //print_state("Befor swap back: ");
+          std::swap(state[second], state[second+reg[depth]]);
+          //print_state("After swap back: ");
+          if( second + reg[depth] < N-1) 
+          {
+            //std::cout << " reg could increased" << depth << " reg = " << reg[depth] << "  reg[depth]+2*depth = " << reg[depth]+2*depth << std::endl;
+            reg[depth]++; 
+            //std::cout << " new reg = " << reg[depth] << std::endl;
+            std::swap(state[second], state[second+reg[depth]]);
+            //print_state("Increase register and new swap: ");
+            //then drop previose registers
+            for(int i = depth+1; i<NP;++i) reg[i] = 0;
+            depth=NP-2;
+            //print_state("Zero next regs and depth++: ");
+            break;
+          }
+          else depth--;
+        }
+        count++;
+        return depth>=0;
+      }
+
+
+      void print(char c=' ') const 
+      {
+        std::cout <<  std::setw(10) << count << " : ";
+        for(const auto & p: result)
+        {
+          std::cout << *p.first << *p.second << " ";
+        }
+        std::cout << c;
+      }
+
+      //const Combination &  get(void) const { return result; }
+      operator const Combination &  () const { return result; }
     };
 
 }

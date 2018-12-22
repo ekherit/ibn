@@ -22,6 +22,7 @@
 #include <cassert>
 
 #include <algorithm>
+#include <chrono>
 
 
 #include <map>
@@ -174,6 +175,64 @@ inline void test_make_unique_pairs(int N=2)
 }
 
 
+void test_pair_combinator(int N)
+{
+  using namespace std;
+  std::vector<int>  A={1};
+  for( int i=1;i<N;++i) A.push_back(i+1);
+  ibn::print_array("array = ",A);
+  auto Aorig = A;
+  ibn::pair_combinator<int> comb(A.begin(),A.end());
+  /* check number of combinations */
+  long n = A.size()/2;
+  long Nexp =  fac(2*n)/(pow(2,n)*fac(n));
+  std::cout << "number of combinations: " << Nexp << " - " << std::endl;;
+  std::vector< std::vector < std::pair<int, int> > > R;
+  ibn::make_unique_pairs(A.begin(),A.end(), R);
+  //for(const auto & r : R)
+  //{
+  //  comb.print();
+  //  std::cout << " =? ";
+  //  ibn::print_pairs(r);
+  //  std::cout << std::endl;
+  //  comb.next();
+  //}
+  comb.print('\n');
+  while(comb.next()) { comb.print('\n');};
+
+}
+
+void compare(int N)
+{
+  using namespace std;
+  std::vector<int>  A={1};
+  for( int i=1;i<N;++i) A.push_back(i+1);
+  ibn::print_array("array = ",A);
+  using namespace std;
+  std::vector<int>  B={1};
+  for( int i=1;i<N;++i) B.push_back(i+1);
+  ibn::print_array("array = ",B);
+
+  int M=100;
+  auto start1 = std::chrono::steady_clock::now();
+  for(int i=0;i<M;++i)
+  {
+    std::vector< std::vector < std::pair<int, int> > > R;
+    ibn::make_unique_pairs(A.begin(),A.end(),R);
+  }
+  auto stop1 = std::chrono::steady_clock::now();
+  std::cout << "make_unique_pairs: " << std::chrono::duration_cast<std::chrono::milliseconds> (stop1-start1).count() << "ms" << std::endl;
+  auto start2 = std::chrono::steady_clock::now();
+  for(int i=0;i<M;++i)
+  {
+    ibn::pair_combinator<int> comb(A.begin(),A.end());
+    while(comb.next());
+  }
+  auto stop2 = std::chrono::steady_clock::now();
+  std::cout << "pair_combinator: " << std::chrono::duration_cast<std::chrono::milliseconds> (stop2-start2).count() << "ms" << std::endl;
+
+}
+
 using namespace std;
 int main(int argc, char ** argv  )
 {
@@ -191,4 +250,8 @@ int main(int argc, char ** argv  )
   test_make_unique_pairs(NA, NB);
   std::cout << "Test make_unique_pairs from one array with size: " << NA << ": \n";
   test_make_unique_pairs(NA);
+  std::cout << "Test for pair_combinator with size " << NA <<  ": \n";
+  test_pair_combinator(NA);
+
+  compare(NA);
 }
