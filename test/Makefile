@@ -1,4 +1,19 @@
-all : combinator
+PROGRAM = combinator averager unit
+all : $(PROGRAM) 
 
-combinator : ../combinator.h combinator.cpp
-		g++ -o combinator combinator.cpp
+CPP_FILES := $(foreach f, $(PROGRAM), $(f).cpp)
+
+COMPILE = g++ -std=c++2a -o $@ $<
+
+$(PROGRAM) : % : %.cpp
+	$(COMPILE)
+
+#depend: $(CPP_FILES)
+#	g++ -MM $^ > .depend
+
+#.cpp : .h
+#	$(PROGRAM)
+
+
+clean:
+	rm -rf $(PROGRAM) 

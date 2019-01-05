@@ -19,6 +19,8 @@
 #ifndef IBN_COMBINATOR_H
 #define IBN_COMBINATOR_H
 
+#include<type_traits>
+
 
 namespace ibn
 {
@@ -194,9 +196,6 @@ namespace ibn
       result = make_unique_pairs_impl<ItA,ItB,CombinationList>(a_begin,a_end,b_begin,b_end);
     }
 
-//  template< class It, class CombinationList> 
-//    inline void make_unique_pairs(It it_begin, It it_end, CombinationList & result);
-
 
 
   template< class It, class CombinationList> 
@@ -368,10 +367,10 @@ namespace ibn
     class pair_combinator
     {
       //using A = typename std::iterator_traits<It>::value_type; 
-      using Combination = std::vector< std::pair<A*, A*> >;
-      const size_t N;
+      using Combinations_t = std::vector< std::pair<A*, A*> >;
+      const size_t N;  //Number of items in the array
       const size_t NP; //Number of pairs
-      Combination result;
+      Combinations_t combs;
       //the pairs must be in the memory in the order: (first,second),(first,second)
       A ** state;
       std::vector<int> reg; //register
@@ -383,26 +382,26 @@ namespace ibn
       template<class It>
       pair_combinator(It it_begin, It it_end) : N(std::distance(it_begin, it_end)), NP(N/2)
       {
+        static_assert(std::is_same<A,typename std::iterator_traits<It>::value_type>::value);
         reg.resize(NP,0);
-        result.reserve(NP+1); //add 1 to work with odd numbers potentially
-        result.resize(NP);
-        state =  &(result[0].first);
+        combs.reserve(NP+1); //add 1 to work with odd numbers potentially
+        combs.resize(NP);
+        state =  &(combs[0].first);
         int idx=0;
         for(auto it = it_begin; it!=it_end; ++it) state[idx++] = &(*it);
-        depth=NP-2;
-        //for(int i=0;i<NP;i++)
-        //{
-        //  reg[i] = 2*i+1;
-        //}
+        depth=NP-1;
         count = 1;
       }
+
+      template  < typename Container >
+      pair_combinator( Container & C ) : pair_combinator(C.begin(), C.end()) {}
 
       void print_state(std::string s="")
       {
         std::cout << std::setw(40) << s << "depth="<< depth << "  reg=";
         for(int i=0;i<NP;++i) std::cout << reg[i];
         std::cout << "  state=";
-        for(const auto & p: result)
+        for(const auto & p: combs)
         {
           std::cout << *p.first << *p.second << " ";
         }
@@ -412,7 +411,7 @@ namespace ibn
       bool next(void)
       {
         if(depth<0) return false;
-        while(depth<NP-1)
+        while(depth<NP)
         {
           //swap back previouse swap
           int second = 2*depth+1;
@@ -442,16 +441,19 @@ namespace ibn
       void print(char c=' ') const 
       {
         std::cout <<  std::setw(10) << count << " : ";
-        for(const auto & p: result)
+        for(const auto & p: combs)
         {
           std::cout << *p.first << *p.second << " ";
         }
         std::cout << c;
       }
-
-      //const Combination &  get(void) const { return result; }
-      operator const Combination &  () const { return result; }
+      operator const Combinations_t &  () const { return combs; }
     };
+
+
+  /* Template class deduction guide */
+  template<typename It> pair_combinator(It b, It e) -> pair_combinator<typename std::iterator_traits<It>::value_type>;
+  template<typename C> pair_combinator(C &c ) -> pair_combinator<typename C::value_type>;
 
 }
 #endif //IBN_COMBINATOR_H

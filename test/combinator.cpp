@@ -182,7 +182,9 @@ void test_pair_combinator(int N)
   for( int i=1;i<N;++i) A.push_back(i+1);
   ibn::print_array("array = ",A);
   auto Aorig = A;
-  ibn::pair_combinator<int> comb(A.begin(),A.end());
+  //ibn::pair_combinator comb(A.begin(),A.end());
+  ibn::pair_combinator comb(A);
+//  ibn::pair_combinator comb(A.begin(),A.end());
   /* check number of combinations */
   long n = A.size()/2;
   long Nexp =  fac(2*n)/(pow(2,n)*fac(n));
@@ -213,7 +215,7 @@ void compare(int N)
   for( int i=1;i<N;++i) B.push_back(i+1);
   ibn::print_array("array = ",B);
 
-  int M=100;
+  int M=1000;
   auto start1 = std::chrono::steady_clock::now();
   for(int i=0;i<M;++i)
   {
