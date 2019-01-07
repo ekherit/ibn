@@ -34,12 +34,10 @@ struct BaseDimension
   using ratio = R;
 };
 
-//series of base dimensions...
+//complex dimension is a series of base dimensions
 template<typename ...B>
 struct Dimension {};
 
-template<int Id>
-struct Dimension< BaseDimension<Id,std::ratio<1,1>> > {};
 
 template< typename B1, typename B2>
 struct Compare {};
@@ -73,7 +71,7 @@ struct MultiplyImpl<0,  BaseDimension<Id1, R1 >, BaseDimension<Id1,R2> >
   private:
     using sum = typename std::ratio_add<R1,R2>::type;
   public:
-    using type = BaseDimension<Id1, sum>;
+    using type = Dimension<BaseDimension<Id1, sum>>;
 };
 
 template < int Id1, typename R1, typename R2>
@@ -82,7 +80,7 @@ struct MultiplyImpl<2,  BaseDimension<Id1, R1 >, BaseDimension<Id1,R2> >
   private:
     using sum = typename std::ratio_add<R1,R2>::type;
   public:
-    using type = BaseDimension<Id1, sum>;
+    using type = Dimension<BaseDimension<Id1, sum>>;
 };
 
 //B1 less then B2
@@ -113,7 +111,7 @@ struct Multiply{};
 
 //multiplication of the BaseDimensions
 template<int Id1, typename R1, int Id2, typename R2>
-struct Multiply< BaseDimension<Id1, R1>, BaseDimension<Id2,R2> >
+struct Multiply< Dimension<BaseDimension<Id1, R1>>, Dimension<BaseDimension<Id2,R2>> >
 { 
   using B1 = BaseDimension<Id1,R1>;
   using B2 = BaseDimension<Id2,R2>;

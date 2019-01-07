@@ -134,6 +134,8 @@ int main(int argc, char ** argv)
     //speed of light
     auto c = 2.99792458e10*cm/s;
     std::cout << "Speed of light c = " << c << " cm/s" << std::endl;
+    //auto test = c*year;
+    c*c;
     std::cout << "Light travel for year : " << c*year << " cm " << decltype(c*year)::dimension() << std::endl;
 
     auto nodim_test = c/c;
