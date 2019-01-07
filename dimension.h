@@ -55,27 +55,27 @@ struct Compare < BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
       : (   (Id1<Id2) ? -1 : +1) ;
 };
 
-//Multiplication of the dimensions
+//Multiplication of the base dimensions
 //
 //T = 0   if B1 ~ B2
 //T = 2   if B1 ~ B2 и ratio(B1+B2) == 0
 //T = -1, if B1 < B2
 //T = +1, if B1 > B2
 template<int T, typename B1, typename B2>
-struct MultiplyImpl { };
+struct MultiplyBaseImpl;
 
 //B1 = B2
 template < int Id1, typename R1, typename R2>
-struct MultiplyImpl<0,  BaseDimension<Id1, R1 >, BaseDimension<Id1,R2> >
+struct MultiplyBaseImpl<0,  BaseDimension<Id1, R1 >, BaseDimension<Id1,R2> >
 {
   private:
     using sum = typename std::ratio_add<R1,R2>::type;
   public:
-    using type = Dimension<BaseDimension<Id1, sum>>;
+    using type = BaseDimension<Id1, sum>;
 };
 
 template < int Id1, typename R1, typename R2>
-struct MultiplyImpl<2,  BaseDimension<Id1, R1 >, BaseDimension<Id1,R2> >
+struct MultiplyBaseImpl<2,  BaseDimension<Id1, R1 >, BaseDimension<Id1,R2> >
 {
   private:
     using sum = typename std::ratio_add<R1,R2>::type;
@@ -85,7 +85,7 @@ struct MultiplyImpl<2,  BaseDimension<Id1, R1 >, BaseDimension<Id1,R2> >
 
 //B1 less then B2
 template < int Id1, typename R1, int Id2, typename R2>
-struct MultiplyImpl<-1,  BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
+struct MultiplyBaseImpl<-1,  BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
 {
   private:
     using B1 = BaseDimension<Id1,R1>;
@@ -96,7 +96,7 @@ struct MultiplyImpl<-1,  BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
 
 //B2 less B1
 template < int Id1, typename R1, int Id2, typename R2>
-struct MultiplyImpl<+1,  BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
+struct MultiplyBaseImpl<+1,  BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
 {
   private:
     using B1 = BaseDimension<Id1,R1>;
@@ -105,30 +105,30 @@ struct MultiplyImpl<+1,  BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
     using type = Dimension<B1,B2>;
 };
 
-//multiplication of dimensions
+template<typename B1, typename B2>
+struct MultiplyBase
+{ 
+  static const int cmp = Compare<B1,B2>::value;
+  public:
+  using type = typename MultiplyBaseImpl<cmp, B1,B2>::type;
+};
+
+
+
+
+//multiplication of the complex dimensions
 template<typename D1, typename D2>
 struct Multiply{};
 
-//multiplication of the BaseDimensions
-template<int Id1, typename R1, int Id2, typename R2>
-struct Multiply< Dimension<BaseDimension<Id1, R1>>, Dimension<BaseDimension<Id2,R2>> >
-{ 
-  using B1 = BaseDimension<Id1,R1>;
-  using B2 = BaseDimension<Id2,R2>;
-  private:
-  static const int cmp = Compare<B1,B2>::value;
-  public:
-  using type = typename MultiplyImpl<cmp, B1,B2>::type;
-};
-
+template<int cmp, typename D1, typename D2> struct MultiplyImpl{};
 
 //multiplication in the midle of the recursion, 
 //B1=B2  turn of the recursion, but dimension remain not equal zero
 template< typename B1, typename B2,  typename ... Bases>
-struct MultiplyImpl<0,  B1, Dimension<B2,  Bases...> >
+struct MultiplyImpl<0,  Dimension<B1>, Dimension<B2,  Bases...> >
 {
   private:
-    using B1B2  = typename MultiplyImpl<0, B1,B2>::type;
+    using B1B2  = typename MultiplyBaseImpl<0, B1,B2>::type;
   public:
     using type = Dimension<B1B2, Bases...>;
 };
@@ -136,7 +136,7 @@ struct MultiplyImpl<0,  B1, Dimension<B2,  Bases...> >
 //multiplication in the midle of the recursion, 
 //B1=B2  turn of the recursion, but dimension disappear
 template< typename B1, typename B2,  typename ... Bases>
-struct MultiplyImpl<2,  B1, Dimension<B2,  Bases...> >
+struct MultiplyImpl<2,  Dimension<B1>, Dimension<B2,  Bases...> >
 {
   using type = Dimension<Bases...>;
 };
@@ -149,7 +149,7 @@ struct MultiplyImpl<2,  B1, Dimension<B2,  Bases...> >
 
 //B2<B1 turn of the recursion (concatenation)
 template< typename B1, typename B2, typename ... Bases>
-struct MultiplyImpl<+1,  B1, Dimension<B2, Bases...> >
+struct MultiplyImpl<+1,  Dimension<B1>, Dimension<B2, Bases...> >
 {
   public:
     using type = Dimension<B1,B2, Bases...>;
@@ -157,10 +157,10 @@ struct MultiplyImpl<+1,  B1, Dimension<B2, Bases...> >
 
 //B1<B2  make recursion deeper
 template< typename B1, typename B2, typename ... Bases>
-struct MultiplyImpl<-1,  B1, Dimension<B2, Bases...> >
+struct MultiplyImpl<-1,  Dimension<B1>, Dimension<B2, Bases...> >
 {
   private:
-    using D = typename Multiply<B1, Dimension<Bases...> >::type;
+    using D = typename Multiply<Dimension<B1>, Dimension<Bases...> >::type;
   public:
     using type = typename Multiply<B2, D>::type;
 };
@@ -168,18 +168,19 @@ struct MultiplyImpl<-1,  B1, Dimension<B2, Bases...> >
 
 //multiplication on dimensionless
 template< typename B1>
-struct Multiply<B1, Dimension<> >
+struct Multiply<Dimension<B1>, Dimension<> >
 {
   using type = Dimension<B1>;
 };
 
 
+/*  
 //start recursion of the multiplication
 //let swap base dimentions even they are the same
 //template < int Id1, int N1, int Id2, int N2, int Id3, int N3, typename ... Bases>
 //template < typename B1, typename B2, typename ... Bases>
 template < int Id1, typename R1, typename B2, typename ... Bases>
-struct Multiply< BaseDimension<Id1,R1>, Dimension<B2,Bases...> >
+struct Multiply< Dimension<BaseDimension<Id1,R1>>, Dimension<B2,Bases...> >
 {
   using B1 = BaseDimension<Id1,R1>;
   private:
@@ -187,6 +188,22 @@ struct Multiply< BaseDimension<Id1,R1>, Dimension<B2,Bases...> >
   public:
   using type = typename MultiplyImpl<cmp, B1, Dimension<B2, Bases...>>::type;
 };
+*/
+
+
+//start recursion of the multiplication
+//let swap base dimentions even they are the same
+//template < int Id1, int N1, int Id2, int N2, int Id3, int N3, typename ... Bases>
+//template < typename B1, typename B2, typename ... Bases>
+template < typename B1, typename B2, typename ... Bases>
+struct Multiply< Dimension<B1>, Dimension<B2,Bases...> >
+{
+  private:
+  static const int cmp = Compare<B1,B2>::value;
+  public:
+  using type = typename MultiplyImpl<cmp, B1, Dimension<B2, Bases...>>::type;
+};
+
 
 
 //right multiplication in term off left multiplication
@@ -223,6 +240,9 @@ struct Multiply< Dimension<>, Dimension<> >
 {
   using type = Dimension<>;
 };
+
+
+//template<typename B, typename D> using Multiply  = typename Multiply< Dimension<B>, D>::type;
 
 //inverse element
 template<typename B>

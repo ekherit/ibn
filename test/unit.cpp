@@ -47,17 +47,19 @@ int main(int argc, char ** argv)
     std::cout << "B0^(8/12) = B0^(2/3): " << B02_3() << std::endl;
 
     std::cout << "Test of multiplication with same dimension" << std::endl;
-    using B0B0 = typename Multiply<B0,B0>::type;
+    using B0B0 = typename MultiplyBase<B0,B0>::type;
     std::cout << "B0*B0 = " << B0B0() << std::endl;
-    std::cout << "B0*B0*B0 = " << Multiply<B0, B0B0 >::type()  << std::endl;
+    std::cout << "B0*B0*B0 = " << MultiplyBase<B0, B0B0 >::type()  << std::endl;
 
     std::cout << "Test for multiplication of different dimensions (result is sorted by dimension id)" << std::endl;
-    using U01 = Multiply<B0,B1>::type;
+    using U01 = MultiplyBase<B0,B1>::type;
     std::cout << "U01 = B0*B1 = " << U01() << std::endl;
-    using U001 = Multiply<B0,U01>::type;
+    using U001 = Multiply<Dimension<B0>,U01>::type;
     std::cout << "U001 = B0*B0*B1 = " << U001() << std::endl;
+  }
 
-    using U0001 = Multiply<B0,U001>::type;
+  /*  
+    using U0001 = Multiply<Dimension<B0>,U001>::type;
     std::cout << "U0001 = B0*B0*B0*B1 = " << U0001() << std::endl;
 
     using U10001 = Multiply<B1,U0001>::type;
@@ -213,5 +215,6 @@ int main(int argc, char ** argv)
     //double x = eV/J;
     std::cout << "eV = " << eV/J << " J" << std::endl;
   }
+*/
 }
 
