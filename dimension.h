@@ -106,7 +106,7 @@ struct MultiplyImpl<+1,  BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
 };
 
 //multiplication of dimensions
-template<typename B1, typename B2>
+template<typename D1, typename D2>
 struct Multiply{};
 
 //multiplication of the BaseDimensions
