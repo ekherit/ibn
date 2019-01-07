@@ -34,20 +34,12 @@ struct BaseDimension
   using ratio = R;
 };
 
-template<int Id, int Num, int Den >
-struct BaseDimension < Id, std::ratio<Num,Den> > {};
-
-
-//template<int Id, int Num>
-//struct BaseDimension < Id, std::ratio<Num,1> > {};
-//
-//template<int Id>
-//struct BaseDimension < Id, std::ratio<1,1> > {};
-
-//series of base units...
+//series of base dimensions...
 template<typename ...B>
-struct Dimension { };
+struct Dimension {};
 
+template<int Id>
+struct Dimension< BaseDimension<Id,std::ratio<1,1>> > {};
 
 template< typename B1, typename B2>
 struct Compare {};
@@ -115,7 +107,7 @@ struct MultiplyImpl<+1,  BaseDimension<Id1,R1>, BaseDimension<Id2,R2> >
     using type = Dimension<B1,B2>;
 };
 
-//multiplication of unis
+//multiplication of dimensions
 template<typename B1, typename B2>
 struct Multiply{};
 
@@ -170,9 +162,9 @@ template< typename B1, typename B2, typename ... Bases>
 struct MultiplyImpl<-1,  B1, Dimension<B2, Bases...> >
 {
   private:
-    using U = typename Multiply<B1, Dimension<Bases...> >::type;
+    using D = typename Multiply<B1, Dimension<Bases...> >::type;
   public:
-    using type = typename Multiply<B2, U>::type;
+    using type = typename Multiply<B2, D>::type;
 };
 
 
@@ -327,6 +319,38 @@ std::ostream & operator<<(std::ostream & os,  Dimension<B1,Bs...>)
   return os << B1() << "*" << Dimension<Bs...>();
 }
 
+
+//template <> 
+//struct is_dimensionless
+//{
+//  constexpr int value = true;
+//};
+
+template <typename U> 
+struct is_dimensionless;
+//{
+//};
+
+template <> 
+struct is_dimensionless<Dimension<>>
+{
+  static const bool value = true;
+};
+
+//template < typename B> 
+//struct is_dimensionless< Dimension<B> >
+//{
+//  static const bool value = (B::ratio::num == 0);
+//};
+
+template < typename B, typename ...Bs > 
+struct is_dimensionless< Dimension<B, Bs...> >
+{
+  static const bool value = is_dimensionless<Dimension<Bs...> >::value && (B::ratio::num == 0);
+};
+
+
+
 template < typename U >
 struct TotalDimension
 {
@@ -336,7 +360,13 @@ struct TotalDimension
 template < typename B, typename ... Bs>
 struct TotalDimension< Dimension<B, Bs...> >
 {
-  static constexpr int value = TotalDimension<Bs ...>::value + fabs(B::ratio::num);
+  static const int value = TotalDimension<Bs ...>::value + fabs(B::ratio::num);
+};
+
+template<int Id, int Denom>
+struct Dimension< BaseDimension<Id, std::ratio<0,Denom> > >
+{ 
+  operator  Dimension<>(){return Dimension<>();}
 };
 
 //template< typename B>
@@ -353,4 +383,7 @@ struct TotalDimension< Dimension<B, Bs...> >
 //{
 //  static constexpr int  value = 0;
 //}
+
+template<int Id>  using new_dimension = Dimension< BaseDimension<Id> >;
+
 #endif
