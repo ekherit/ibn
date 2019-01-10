@@ -83,9 +83,6 @@ int main()
   std::cout << setw(shift) << "D0 * D  = " << D0xD() << endl;
 
 
-  using test = Test<D0,D1>::type;
-  std::cout << "Test : " << test() << std::endl;
-
   using D0xD0 =  Multiply<D0,D0>::type;
   std::cout << "Test square of D0: D0 * D0 =  " << D0xD0() <<std::endl;
   using D0xD0xD0 =  Multiply<D0,D0xD0>::type;
@@ -102,6 +99,7 @@ int main()
   using D1xD2 =  Multiply<D1,D2>::type;
   std::cout << "                   D1 * D2 =  " << D1xD2() <<std::endl;
 
+  DMAP[3]="A";
   using A = Dimension<BaseDimension<3, std::ratio<-5,1> >> ;
   std::cout << "Test square of A =  " << A() <<std::endl;
 
