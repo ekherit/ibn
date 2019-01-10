@@ -17,6 +17,7 @@
  */
 
 #include "../new_dim.h"
+#include "../new_unit.h"
 
 #include <type_traits>
 #include <typeinfo>
@@ -63,11 +64,11 @@ int main()
 {
   int test_number = 0;
   using D =  Dimension<>;
-  using D0 = new_dimension<0>;
+  using D0 = make_dimension<0>;
   DMAP[0]="D0";
-  using D1 = new_dimension<1>;
+  using D1 = make_dimension<1>;
   DMAP[1]="D1";
-  using D2 = new_dimension<2>;
+  using D2 = make_dimension<2>;
   DMAP[2]="D2";
   std::cout << "D:" << D() << std::endl;
   std::cout << "D0:" << D0() << std::endl;
@@ -108,4 +109,27 @@ int main()
   using D2xD0xD1 = Multiply<D2,D0xD1>::type;
   std::cout << "Test square of D2xD0xD1 =  " << D2xD0xD1() <<std::endl;
   //std::cout << "ID(7) = " << hex << int('7') << bitset<8>('7') << std::endl;
+  using D0xD1xD2_2 = Multiply<D0xD1, D2>::type;
+  std::cout << "(D0xD1)xD2 =  " << D0xD1xD2() <<std::endl;
+
+  auto s = make_unit<0>(); DMAP[0]="T";
+  auto cm = make_unit<1>(); DMAP[1]="L";
+  auto g = make_unit<2>(); DMAP[2]="M";
+
+  using Length_t = decltype(cm)::dimension;
+  using Time_t   = decltype(s)::dimension;
+  using Mass_t   = decltype(g)::dimension;
+
+  auto l = 2e5*cm+1.3e4*cm;
+  auto t = 13*s;
+  auto v = l/t;
+  using Velocity_t = decltype(v)::dimension;
+
+  using test = typename Multiply< Time_t, Velocity_t>::type;
+  //using test2 = typename Multiply< Velocity_t, Time_t>::type;
+  std::cout << v.data << " " <<Velocity_t() << std::endl;
+  std::cout << "V*T : " << test() << std::endl;
+  auto rho = 1.0*g/(cm*cm*cm);
+  //auto v2 = v*s;
+  //auto P = rho*v*v;
 }
