@@ -83,9 +83,18 @@ int main()
   std::cout << setw(shift) << "D0 * D  = " << D0xD() << endl;
 
 
+  using test = Test<D0,D1>::type;
+  std::cout << "Test : " << test() << std::endl;
 
   using D0xD0 =  Multiply<D0,D0>::type;
   std::cout << "Test square of D0: D0 * D0 =  " << D0xD0() <<std::endl;
+  using D0xD0xD0 =  Multiply<D0,D0xD0>::type;
+  std::cout << "Test square of D0: D0 * D0 * D0 =  " << D0xD0xD0() <<std::endl;
+  //std::cout << "DR = " << Multiply<D0,D0>::DR() << std::endl;
+  //std::cout << "D1DR = " << Multiply<D0,D0>::MD1DR() << std::endl;
+  //std::cout << "MM = " << Multiply<D0,D1>::MM() << std::endl;
+  //std::cout << "id1 = " << Multiply<D1,D0>::id1 << std::endl;
+  //std::cout << "id2 = " << Multiply<D1,D0>::id2 << std::endl;
   using D0xD1 =  Multiply<D0,D1>::type;
   std::cout << "                   D0 * D1 =  " << D0xD1() <<std::endl;
   using D1xD0 =  Multiply<D1,D0>::type;
@@ -96,9 +105,9 @@ int main()
   using A = Dimension<BaseDimension<3, std::ratio<-5,1> >> ;
   std::cout << "Test square of A =  " << A() <<std::endl;
 
-  using D0xD1xD2 = Multiply<D0,D1xD2>::type;
-  //std::cout << "Test square of D0xD1xD2 =  " << D0xD1xD2() <<std::endl;
-  //using D2xD0xD1 = Multiply<D2,D0xD1>::type;
-  //std::cout << "Test square of D2xD0xD1 =  " << D2xD0xD1() <<std::endl;
+ using D0xD1xD2 = Multiply<D0,D1xD2>::type;
+  std::cout << "Test square of D0xD1xD2 =  " << D0xD1xD2() <<std::endl;
+  using D2xD0xD1 = Multiply<D2,D0xD1>::type;
+  std::cout << "Test square of D2xD0xD1 =  " << D2xD0xD1() <<std::endl;
   //std::cout << "ID(7) = " << hex << int('7') << bitset<8>('7') << std::endl;
 }
