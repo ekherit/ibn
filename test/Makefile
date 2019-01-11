@@ -1,4 +1,4 @@
-PROGRAM = combinator averager new_dimension
+PROGRAM = combinator averager new_dimension benchmark_dimension_unit
 all : $(PROGRAM) 
 
 CPP_FILES := $(foreach f, $(PROGRAM), $(f).cpp)

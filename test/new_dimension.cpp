@@ -27,38 +27,7 @@
 #include <bitset>
 using namespace std;
 
-std::map<int, std::string> DMAP;
-
-template <int id, typename R> 
-std::ostream & operator<<(std::ostream & os, BaseDimension<id,R> )
-{
-  os <<DMAP[id]; 
-  if(R::den !=1 || R::num<0)
-  {
-    os<<"^(" << R::num;
-    if(R::den !=1) os << "/"<<R::den;
-    os << ")";
-  }
-  else os << "^" << R::num;
-  return os;
-}
-
-template <typename B1> 
-std::ostream & operator<<(std::ostream & os,  Dimension<B1>)
-{
-  return os << B1();
-}
-
-template <typename B1, typename B2, typename...Bs> 
-std::ostream & operator<<(std::ostream & os,  Dimension<B1,B2, Bs...>)
-{
-  return os << B1() << "·" << Dimension<B2,Bs...>();
-}
-
-std::ostream & operator<<(std::ostream & os,  Dimension<>)
-{
-  return os << "none";
-}
+#include "../dimension_print.h"
 
 int main()
 {
@@ -146,4 +115,12 @@ int main()
   auto keV = 1.6e-12*J;
   double x = keV/J;
   std::cout << "electron rest energy: " << x << " Joules" << std::endl;
+
+  //auto test3 = 1.0*J.pow<3>();
+  using test3 = Power<D0,3>::type;
+  std::cout << "test 3 = "  << test3() << std::endl;
+  //for(auto i : mm)
+  //{
+  //  std::cout << i.first << "   " << i.second << "  " << bitset<8>(i.first) << std::endl;
+  //}
 }

@@ -39,14 +39,6 @@ struct Dimension
   static const int size = sizeof...(Bs); //number of base dimensions in complex dimension
 };
 
-//template<typename B, typename ...Bs>
-//struct Dimension<B,Bs...>
-//{
-//  static const int size = 1+sizeof...(Bs); //number of base dimensions in complex dimension
-//  using first = B;
-//  using tail = Dimension<Bs...>;
-//};
-
 // ************* OPERATION WITH DIMENSIONS *************************************** 
 
 //concatenation dimensions without manipulaing with them
@@ -61,7 +53,7 @@ struct Concatenate< Dimension<B>, Dimension<Bs...> >
 
 
 //extracting base dimensions from complex dimension
-
+//First base dimension in dimension list
 template<typename D>
 struct First;
 
@@ -72,6 +64,7 @@ template <typename B, typename... Bs>
 struct First<Dimension<B,Bs...>> { using type = B; };
 
 
+//Remain dimension list ( first base dimension is removed)
 template <typename D>
 struct Tail;
 
@@ -82,7 +75,8 @@ template <typename B, typename... Bs>
 struct Tail<Dimension<B,Bs...>> { using type = Dimension<Bs...>; };
 
 
-//multiplication of the complex dimensions
+//multiplication of the complex dimensions.
+//Implementaion detail
 template<typename D1, typename D2>
 struct MultiplyLeft;
 
@@ -170,6 +164,34 @@ struct Inverse< Dimension<B1,Bs...> >
     using type = typename Concatenate<DinvB1, DinvBs>::type;
 };
 
+//power operator
+template<typename B, int n>
+struct Power;
+
+template<typename B, int n>
+struct Power< Dimension<B>, n>
+{
+  using type = Dimension< BaseDimension<B::id, std::ratio_multiply<B,std::ratio<n,1>>> >;
+};
+
+
+template<typename B1, int n, typename...Bs>
+struct Power< Dimension<B1, Bs...>, n> 
+{
+  private:
+    using B1n = typename Power<B1,n>::type;
+    using Bsn = typename Power<Dimension<Bs...>,n>::type;
+  public:
+    using type = typename Multiply<B1n, Bsn>::type;
+};
+
+template<int n> 
+struct Power< Dimension<>, n> 
+{
+  using type = Dimension<>;
+};
+
+//some usefull functions
 template <typename U> 
 struct is_dimensionless;
 
