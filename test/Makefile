@@ -3,7 +3,8 @@ all : $(PROGRAM)
 
 CPP_FILES := $(foreach f, $(PROGRAM), $(f).cpp)
 
-COMPILE = g++ -std=c++2a -o $@ $<
+#COMPILE = clang -std=c++2a -o $@ $< 
+COMPILE = g++ -std=c++2a -o $@ $< 
 
 $(PROGRAM) : % : %.cpp
 	$(COMPILE)

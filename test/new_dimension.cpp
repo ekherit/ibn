@@ -29,17 +29,17 @@ using namespace std;
 
 std::map<int, std::string> DMAP;
 
-template <int Id1, typename R1> 
-std::ostream & operator<<(std::ostream & os, BaseDimension<Id1, R1> )
+template <int id, typename R> 
+std::ostream & operator<<(std::ostream & os, BaseDimension<id,R> )
 {
-  os <<DMAP[Id1]; 
-  if(R1::den !=1 || R1::num<0)
+  os <<DMAP[id]; 
+  if(R::den !=1 || R::num<0)
   {
-  os<<"^(" << R1::num;
-  if(R1::den !=1) os << "/"<<R1::den;
-  os << ")";
+    os<<"^(" << R::num;
+    if(R::den !=1) os << "/"<<R::den;
+    os << ")";
   }
-  else os << "^" << R1::num;
+  else os << "^" << R::num;
   return os;
 }
 
@@ -49,10 +49,10 @@ std::ostream & operator<<(std::ostream & os,  Dimension<B1>)
   return os << B1();
 }
 
-template <typename B1, typename ...Bs> 
-std::ostream & operator<<(std::ostream & os,  Dimension<B1,Bs...>)
+template <typename B1, typename B2, typename...Bs> 
+std::ostream & operator<<(std::ostream & os,  Dimension<B1,B2, Bs...>)
 {
-  return os << B1() << "·" << Dimension<Bs...>();
+  return os << B1() << "·" << Dimension<B2,Bs...>();
 }
 
 std::ostream & operator<<(std::ostream & os,  Dimension<>)
@@ -109,16 +109,24 @@ int main()
   using D2xD0xD1 = Multiply<D2,D0xD1>::type;
   std::cout << "Test square of D2xD0xD1 =  " << D2xD0xD1() <<std::endl;
   //std::cout << "ID(7) = " << hex << int('7') << bitset<8>('7') << std::endl;
-  using D0xD1xD2_2 = Multiply<D0xD1, D2>::type;
+  //using D0xD1xD2_2 = Multiply<D0xD1, D2>::type;
   std::cout << "(D0xD1)xD2 =  " << D0xD1xD2() <<std::endl;
+  using TEST_DIM2 = Dimension<BaseDimension<1>, BaseDimension<2> >;
+  std::cout << "HEAD (1,2) " << typename Tail<TEST_DIM2>::type() << std::endl;
+  using TEST_DIM3 = Dimension<BaseDimension<0>, BaseDimension<1>,BaseDimension<2> >;
+  std::cout << "TEST_DIM3::size = " << TEST_DIM3::size << std::endl;
+  std::cout << "first TEST_DIM3 = " << Dimension< First<TEST_DIM3>::type >() << std::endl;
+  std::cout << "HEAD TEST_DIM3 " << typename Tail<TEST_DIM3>::type() << std::endl;
 
   auto s = make_unit<0>(); DMAP[0]="T";
   auto cm = make_unit<1>(); DMAP[1]="L";
   auto g = make_unit<2>(); DMAP[2]="M";
 
+  auto J = g*cm*cm/s/s;
   using Length_t = decltype(cm)::dimension;
   using Time_t   = decltype(s)::dimension;
   using Mass_t   = decltype(g)::dimension;
+  using Energy_t = decltype(J)::dimension;
 
   auto l = 2e5*cm+1.3e4*cm;
   auto t = 13*s;
@@ -130,6 +138,12 @@ int main()
   std::cout << v.data << " " <<Velocity_t() << std::endl;
   std::cout << "V*T : " << test() << std::endl;
   auto rho = 1.0*g/(cm*cm*cm);
-  //auto v2 = v*s;
-  //auto P = rho*v*v;
+  auto v2 = v*v;
+  auto P = rho*v*v;
+  auto test2 = P*v*t*l/(g*g*g*v2);
+  std::cout << test2.data << " " << decltype(test2)::dimension() << std::endl;
+
+  auto keV = 1.6e-12*J;
+  double x = keV/J;
+  std::cout << "electron rest energy: " << x << " Joules" << std::endl;
 }
