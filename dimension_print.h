@@ -44,7 +44,9 @@ std::map<char,std::string> super_map
   {'(',"⁽"},
   {')',"⁾"},
   {'n',"ⁿ"},
-  {'i',"ⁱ"}
+  {'i',"ⁱ"},
+  {'/',"ᐟ"},
+  {0,""}
 };
 
 std::ostream & operator<<(std::ostream & os,  Dimension<>)

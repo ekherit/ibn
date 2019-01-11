@@ -165,31 +165,25 @@ struct Inverse< Dimension<B1,Bs...> >
 };
 
 //power operator
-template<typename B, int n>
+template<typename B, int n, int m=1>
 struct Power;
 
-template<typename B, int n>
-struct Power< Dimension<B>, n>
+template<int n, int m> 
+struct Power< Dimension<>, n, m> 
 {
-  using type = Dimension< BaseDimension<B::id, std::ratio_multiply<B,std::ratio<n,1>>> >;
+  using type = Dimension<>;
 };
 
-
-template<typename B1, int n, typename...Bs>
-struct Power< Dimension<B1, Bs...>, n> 
+template<typename B1, int n, int m, typename...Bs>
+struct Power< Dimension<B1, Bs...>, n, m> 
 {
   private:
-    using B1n = typename Power<B1,n>::type;
-    using Bsn = typename Power<Dimension<Bs...>,n>::type;
+    using B1n = Dimension< BaseDimension<B1::id, std::ratio_multiply<B1,std::ratio<n,m>>> >;
+    using Bsn = typename Power<Dimension<Bs...>,n, m>::type;
   public:
     using type = typename Multiply<B1n, Bsn>::type;
 };
 
-template<int n> 
-struct Power< Dimension<>, n> 
-{
-  using type = Dimension<>;
-};
 
 //some usefull functions
 template <typename U> 

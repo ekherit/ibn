@@ -116,9 +116,14 @@ int main()
   double x = keV/J;
   std::cout << "electron rest energy: " << x << " Joules" << std::endl;
 
-  //auto test3 = 1.0*J.pow<3>();
-  using test3 = Power<D0,3>::type;
-  std::cout << "test 3 = "  << test3() << std::endl;
+  std::cout << pow(2.3, 3.3) << std::endl;
+  auto test3 = keV.pow<4>();
+  using test4 = Power<decltype(J)::dimension,3>::type;
+  //using test4 = Power<D0xD1xD2,3>::type;
+  std::cout << "test 3 = "  << test3.data << " " << decltype(test3)::dimension() << std::endl;
+  std::cout << "test 4 = "  << test4() << std::endl;
+  auto test5 = keV.pow<1,3>();
+  std::cout << "test 5 = "  << test5.data << " " << decltype(test5)::dimension() << std::endl;
   //for(auto i : mm)
   //{
   //  std::cout << i.first << "   " << i.second << "  " << bitset<8>(i.first) << std::endl;
