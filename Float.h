@@ -25,8 +25,13 @@
 #include<cmath>
 #include<bitset>
 #include <tuple>
+#include <vector>
 
-template< unsigned long d , unsigned long num_base=1>
+#include <array>
+
+using DigitImplType = unsigned long;
+
+template< DigitImplType d, DigitImplType num_base=1>
 struct Digit
 { 
   using type = decltype(d);
@@ -79,7 +84,7 @@ struct Concatenate<NaturalNumber<>, N2>
 };
 
 
-template <unsigned long d, unsigned long base=10> 
+template <DigitImplType d, DigitImplType base=10> 
 struct MakeNumber
 {
   using type = typename std::conditional< 
@@ -96,13 +101,13 @@ struct MakeNumber
                      >::type ;
 };
 
-template <unsigned long base> 
+template <DigitImplType base> 
 struct MakeNumber<0,base>
 {
   using type = NaturalNumber<Digit<0,base>>;
 };
 
-template <unsigned long d, unsigned long base=10> 
+template <DigitImplType d, DigitImplType base=10> 
 using make_number_t = typename MakeNumber<d,base>::type;
 
 template<typename NA, typename NB>
@@ -304,6 +309,56 @@ constexpr auto multiply(void)
   base_type n2 = D2::digit;
 };
 
+//template<int N, typename Type>
+//constexpr std::array<Type,N> to_base2(Type d, Type b)
+//{
+//  std::array<Type,N> A;
+//  return 
+//};
+
+
+//template<DigitImplType d, DigitImplType B>
+//struct ToBase
+//{
+//  private:
+//    static constexpr DigitImplType new_digit = D::digit % B;
+//    static constexpr DigitImplType rest = D::digit/B;
+//  public:
+//  using type = typename  std::conditinal< rest ==0,
+//        NaturalNumber< D<new_digit,B>
+//    Concatenate< NaturalNumber<
+//}
+
+template<typename Type>
+constexpr std::vector<Type> to_base(Type d, Type b)
+{
+  std::vector<Type> v;
+  //v.reserve(d/b+1);
+  while ( d>0 )
+  {
+    v.push_back(d%b);
+    d/=b;
+  };
+  return v;
+};
+
+
+
+template<typename Type>
+constexpr std::tuple<Type,Type> to_base_restricted(Type d1, Type b)
+{
+  return std::tuple<Type,Type>(d1%b, d1/b);
+};
+
+template<typename Type>
+constexpr std::tuple<Type,Type> to_base_restricted(std::tuple<Type,Type> d, Type b)
+{
+  std::tuple<Type,Type> n{to_base_restricted(std::get<0>(d),b)};
+ // std::tuple<Type,Type> m{to_base_restricted(d2,b)};
+//  Type low = std::get<0>(n) + std::get<0
+};
+
+
 template<typename D1, typename D2>
 struct MultiplicationTable
 {
@@ -364,7 +419,7 @@ struct IntegerNumber
   using number = NatNum;
 };
 
-template<long N, unsigned long Base=10>
+template<long N, DigitImplType Base=10>
 struct MakeIntegerNumber
 {
   using type = typename std::conditional< N >= 0,

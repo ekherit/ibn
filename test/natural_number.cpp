@@ -213,6 +213,24 @@ int main()
   //  {
   //  }
   //}
+  constexpr unsigned long M = std::numeric_limits<unsigned long>::max();
+  constexpr unsigned long B = 5;
+  constexpr auto v = to_base(M,B); 
+  unsigned long result = 0;
+  unsigned long power = 1;
+  int idx=0;
+  std::cout<< "Check expansion: of " << M << " to " << B << " Base: " << std::endl;
+  for ( auto & i : v ) 
+  {
+    std::cout << i << "*" << B << "^"<< idx <<  (idx<(v.size()-1) ?  " + " :"");
+    result += i*power;
+    power*=B;
+    ++idx;
+  }
+  std::cout << " = " << result;
+  if( result == M ) std::cout << " = " << M << ": OK" << std::endl;
+  else std::cout << " != " <<  M << ": FAIL " << std::endl;
+
 };
 
 
