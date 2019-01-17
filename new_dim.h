@@ -88,7 +88,6 @@ struct MultiplyLeft<Dimension<B>, Dimension<>> { using type = Dimension<B>; };
 template<typename... Bs>
 struct MultiplyLeft<Dimension<Bs...>, Dimension<> > { using type = Dimension<Bs...>; };
 
-
 //Implementation of multiplication of complex dimension
 template<typename B1, typename B2, typename ...Bs2>
 struct MultiplyLeft< Dimension<B1>, Dimension<B2,Bs2...> >

@@ -24,6 +24,7 @@
 #include <string>
 #include <bitset>
 #include <iomanip>
+#include <vector>
 using namespace std;
 
 std::ostream & operator<<(std::ostream & os,  NaturalNumber<>) {return os;}
@@ -131,6 +132,15 @@ struct Inc<0, N>
   };
 };
 
+
+//template <int N>
+//constexpr vector<int> range(void)
+//{
+//  std::vector<int> r(N);
+//  for (int i{0};i<N;++i) r[i] = i;
+//  return r;
+//};
+
 int main()
 {
   using n1 = NaturalNumber<Digit<1>>;
@@ -160,15 +170,49 @@ int main()
   Nx2<20, o1>::print();
   //Inc<800>::print();
 
-  using D8 = make_number<8>;
+  using D8 = make_number_t<8>;
   std::cout << Str<D8>() << std::endl;
-  using H256 = make_number<256, 15>;
+  using H256 = make_number_t<256, 15>;
   std::cout << "H256=" << Str<H256>() << std::endl;
-  using H255 = make_number<255, 15>;
-  std::cout << "H255=" << Str<make_number<65535,15>>(2) << std::endl;
-  using O8 = make_number<8,7>;
+  using H255 = make_number_t<255, 15>;
+  std::cout << "H255=" << Str<make_number_t<65535,15>>(2) << std::endl;
+  using O8 = make_number_t<8,7>;
   std::cout << "O8=" << Str<O8>() << std::endl;
   using r = RealNumber<n9, n10>;
+  using n = make_integer_t<23>;
+
+  using D35 = make_number_t<35>;
+  using D42 = make_number_t<42>;
+  std::cout << "35 < 42 = " << Less<D35,D42>::value << std::endl;
+  std::cout << "42 < 35 = " << Less<D42,D35>::value << std::endl;
+  std::cout << "3534563 < 3534562 = " << Less<make_number_t<3534563>,make_number_t<3534562>>::value << std::endl;
+  std::cout << "3534563 < 3534563 = " << Less<make_number_t<3534563>,make_number_t<3534563>>::value << std::endl;
+  std::cout << "3534563 < 3534564 = " << Less<make_number_t<3534563>,make_number_t<3534564>>::value << std::endl;
+  std::cout << Str<n4>() << " <  " << Str<n6>() << " = " << Less<n4,n6>::value << std::endl;
+
+  //std::bitset<16> a(5);
+  //std::bitset<16> b(255);
+  //auto ab = multiply_bitset<16>(a,b);
+  //std::cout <<"  a = " <<  a << std::endl;
+  //std::cout <<"  b = " <<  b << std::endl;
+  //std::cout <<" ab = " <<  ab << std::endl;
+  //std::cout <<" ab = " <<  ab.to_ulong() << "   " << a.to_ulong()*b.to_ulong() << std::endl;
+  //std::bitset<8>  byte(235);
+  //std::bitset<16> word(3253);
+
+  using D3 = make_number_t<3>;
+  //using D3xD42 = Multiply<D3,D42>::type;
+  //using r5 = typename Range<5>::type;
+  //auto printer = [](int d) { std::cout << d<< std::endl; return true; };
+  //using for1 = For<r5, decltype(printer)>;
+
+  //for(int i{0}; i<100; ++i)
+  //{
+  //  using a  = make_number_t<i>;
+  //  for(int j{0};j<100;++j)
+  //  {
+  //  }
+  //}
 };
 
 
