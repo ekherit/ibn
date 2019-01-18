@@ -16,6 +16,7 @@
  * =====================================================================================
  */
 
+#include "../NaturalNumber.h"
 #include "../Float.h"
 
 #include <any>
@@ -32,14 +33,15 @@ std::ostream & operator<<(std::ostream & os,  NaturalNumber<>) {return os;}
 template<typename D1, typename...Ds>
 std::ostream & operator<<(std::ostream & os,  NaturalNumber< D1,Ds...> d)
 {
-  std::cout << D1::digit << " " << NaturalNumber< Ds...>();
+  //std::cout << D1::digit << " " << NaturalNumber< Ds...>();
+  std::cout << NaturalNumber< Ds...>() << " " << D1::digit;
   return os;
 };
 
 //template<typename A,typename B> using add  = typename Add<A,B>::type;
 
-template<typename A, typename B> 
-auto add(A a, B b) { return typename Add<A,B>::type(); };
+//template<typename A, typename B> 
+//auto add(A a, B b) { return typename Add<A,B>::type(); };
 
 template<typename Number>
 struct Str;
@@ -143,93 +145,25 @@ struct Inc<0, N>
 
 int main()
 {
-  using n1 = NaturalNumber<Digit<1>>;
-  using n2 = NaturalNumber<Digit<4'105'146'345>>;
-  //using n1 = NaturalNumber<Digit<122>>;
-  //using n2 = NaturalNumber<Digit<100>>;
-  using sum = typename Add<n1,n2>::type;
-  using sum2 = typename Add<sum,sum>::type;
-  using sum4 = typename Add<sum2,sum2>::type;
-  using sum8 = typename Add<sum4,sum4>::type;
-  std::cout << sum() << std::endl;
-  std::cout << sum2() << std::endl;
-  std::cout << sum4() << std::endl;
-  std::cout << sum8() << std::endl;
-  using n4 = NaturalNumber<Digit<1>,Digit<2>, Digit<3>, Digit<4>>;
-  using n6 = NaturalNumber<Digit<5>,Digit<6>, Digit<7>, Digit<8>, Digit<9>, Digit<10>>;
-  using sum9 = typename Add<n4,n6>::type;
-  std::cout << "sum9=" << sum9() <<std::endl;
-  static const int N=128;
-  Nx2<N-1, NaturalNumber<Digit<1>>>::print();
-  //std::cout << Str<sum9>() << std::endl;
-  using n9 = NaturalNumber<Digit<9>>;
-  using n10 = typename Add< n9, n1>::type;
-  std::cout << Str<n10>(0) << std::endl;
-  using b1 = NaturalNumber<Digit<1,2-1>>;
-  using o1 = NaturalNumber<Digit<1,8-1>>;
-  Nx2<20, o1>::print();
-  //Inc<800>::print();
-
-  using D8 = make_number_t<8>;
-  std::cout << Str<D8>() << std::endl;
-  using H256 = make_number_t<256, 15>;
-  std::cout << "H256=" << Str<H256>() << std::endl;
-  using H255 = make_number_t<255, 15>;
-  std::cout << "H255=" << Str<make_number_t<65535,15>>(2) << std::endl;
-  using O8 = make_number_t<8,7>;
-  std::cout << "O8=" << Str<O8>() << std::endl;
-  using r = RealNumber<n9, n10>;
-  using n = make_integer_t<23>;
-
-  using D35 = make_number_t<35>;
-  using D42 = make_number_t<42>;
-  std::cout << "35 < 42 = " << Less<D35,D42>::value << std::endl;
-  std::cout << "42 < 35 = " << Less<D42,D35>::value << std::endl;
-  std::cout << "3534563 < 3534562 = " << Less<make_number_t<3534563>,make_number_t<3534562>>::value << std::endl;
-  std::cout << "3534563 < 3534563 = " << Less<make_number_t<3534563>,make_number_t<3534563>>::value << std::endl;
-  std::cout << "3534563 < 3534564 = " << Less<make_number_t<3534563>,make_number_t<3534564>>::value << std::endl;
-  std::cout << Str<n4>() << " <  " << Str<n6>() << " = " << Less<n4,n6>::value << std::endl;
-
-  //std::bitset<16> a(5);
-  //std::bitset<16> b(255);
-  //auto ab = multiply_bitset<16>(a,b);
-  //std::cout <<"  a = " <<  a << std::endl;
-  //std::cout <<"  b = " <<  b << std::endl;
-  //std::cout <<" ab = " <<  ab << std::endl;
-  //std::cout <<" ab = " <<  ab.to_ulong() << "   " << a.to_ulong()*b.to_ulong() << std::endl;
-  //std::bitset<8>  byte(235);
-  //std::bitset<16> word(3253);
-
-  using D3 = make_number_t<3>;
-  //using D3xD42 = Multiply<D3,D42>::type;
-  //using r5 = typename Range<5>::type;
-  //auto printer = [](int d) { std::cout << d<< std::endl; return true; };
-  //using for1 = For<r5, decltype(printer)>;
-
-  //for(int i{0}; i<100; ++i)
-  //{
-  //  using a  = make_number_t<i>;
-  //  for(int j{0};j<100;++j)
-  //  {
-  //  }
-  //}
-  constexpr unsigned long M = std::numeric_limits<unsigned long>::max();
-  constexpr unsigned long B = 5;
-  constexpr auto v = to_base(M,B); 
-  unsigned long result = 0;
-  unsigned long power = 1;
-  int idx=0;
-  std::cout<< "Check expansion: of " << M << " to " << B << " Base: " << std::endl;
-  for ( auto & i : v ) 
-  {
-    std::cout << i << "*" << B << "^"<< idx <<  (idx<(v.size()-1) ?  " + " :"");
-    result += i*power;
-    power*=B;
-    ++idx;
-  }
-  std::cout << " = " << result;
-  if( result == M ) std::cout << " = " << M << ": OK" << std::endl;
-  else std::cout << " != " <<  M << ": FAIL " << std::endl;
+  using n1 = make_natural_number_t<1>;
+  std::cout << "Initialization 1 = " << n1() << std::endl;
+  using n2 = make_natural_number_t<2>;
+  std::cout << "Initialization 2 = " << n2() << std::endl;
+  using n27 = make_natural_number_t<27>;
+  std::cout << "Initialization 27 = " << n27() << std::endl;
+  using sum_1_2 = add_t<n1,n2>;
+  std::cout << "1+2 = " << sum_1_2() << std::endl;
+  using n3 = make_natural_number_t<3>;
+  static_assert( is_same< n3, sum_1_2>::value );
+  using sum_27_3 = add_t<n27,n3>;
+  std::cout << "1+2 = " << sum_27_3() << std::endl;
+  using n92356 = make_natural_number_t<92356>;
+  std::cout << "92356 = " << n92356() << std::endl;
+  using n73212 = make_natural_number_t<73212>;
+  std::cout << "73212 = " << n73212() << std::endl;
+  std::cout << "12356 + 73212 = " << add_t<n92356, n73212>() << std::endl;
+  //multiply doesnt work yet
+  //std::cout << multiply_t<n92356,n73212>() << std::endl;
 
 };
 
