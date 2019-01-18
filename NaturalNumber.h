@@ -24,21 +24,18 @@
 #include<type_traits>
 #include<limits>
 
-//interface
-using DigitImplType = unsigned long; 
-
-template< DigitImplType d, DigitImplType num_base=1>
-struct Digit;
 
 //natural number is represented by positional numeric system by number of digit
 template <typename ... Ds>
 struct NaturalNumber;
 
-template <DigitImplType d, DigitImplType base=10> 
-struct MakeNaturalNumber;
+using DigitImplType = unsigned long; 
+
+template< DigitImplType d, DigitImplType num_base=1>
+struct Digit;
 
 template <DigitImplType d, DigitImplType base=10> 
-using make_natural_number_t = typename MakeNaturalNumber<d,base>::type;
+struct MakeNaturalNumber;
 
 template<typename NA, typename NB>
 struct Add;
@@ -49,16 +46,27 @@ struct Equal;
 template<typename NA, typename NB>
 struct Less;
 
+
+/* #####   Some helper functions ################################################ */
+
+template <DigitImplType d, DigitImplType base=10> 
+using make_natural_number_t = typename MakeNaturalNumber<d,base>::type;
+
 template <typename A, typename B> 
 using add_t = typename Add<A,B>::type;
 
 template <typename A, typename B> 
-using is_less = typename Less<A,B>::value;
+constexpr bool is_less = Less<A,B>::value;
 
 template <typename A, typename B> 
-using is_equal = typename Equal<A,B>::value;
+constexpr bool is_equal = Equal<A,B>::value;
 
 
+
+
+
+
+/* #####   CLASS IMPLEMENTATIONS  ############################################# */
 
 template< DigitImplType d, DigitImplType num_base>
 struct Digit
@@ -230,4 +238,6 @@ struct Less< NaturalNumber<>, NaturalNumber<B,Bs...> >
   static const bool value = true;
 };
 
+
 #endif
+

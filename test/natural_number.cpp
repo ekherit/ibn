@@ -164,6 +164,7 @@ int main()
   std::cout << "12356 + 73212 = " << add_t<n92356, n73212>() << std::endl;
   //multiply doesnt work yet
   //std::cout << multiply_t<n92356,n73212>() << std::endl;
+  std::cout << "if 12356 + 73212 = 165568 ?  " << (is_equal<make_natural_number_t<165568>, add_t<n92356, n73212> > ? "Yes" : "No"  ) << std::endl;;
 
 };
 
