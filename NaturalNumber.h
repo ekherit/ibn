@@ -23,13 +23,14 @@
 
 #include<type_traits>
 #include<limits>
+#include<cstdint>
 
 
 //natural number is represented by positional numeric system by number of digit
 template <typename ... Ds>
 struct NaturalNumber;
 
-using DigitImplType = unsigned long; 
+using DigitImplType = uint32_t; 
 
 template< DigitImplType d, DigitImplType num_base=1>
 struct Digit;
@@ -37,14 +38,18 @@ struct Digit;
 template <DigitImplType d, DigitImplType base=10> 
 struct MakeNaturalNumber;
 
-template<typename NA, typename NB>
-struct Add;
 
 template<typename NA, typename NB>
 struct Equal;
 
 template<typename NA, typename NB>
 struct Less;
+
+template<typename NA, typename NB>
+struct Add;
+
+template<typename NA, typename NB>
+struct Multiply;
 
 
 /* #####   Some helper functions ################################################ */
@@ -56,6 +61,9 @@ template <typename A, typename B>
 using add_t = typename Add<A,B>::type;
 
 template <typename A, typename B> 
+using multiply_t = typename Multiply<A,B>::type;
+
+template <typename A, typename B> 
 constexpr bool is_less = Less<A,B>::value;
 
 template <typename A, typename B> 
@@ -65,17 +73,18 @@ constexpr bool is_equal = Equal<A,B>::value;
 
 
 
-
-/* #####   CLASS IMPLEMENTATIONS  ############################################# */
+/* #####   IMPLEMENTATIONS  ############################################# */
 
 template< DigitImplType d, DigitImplType num_base>
 struct Digit
 { 
   using type = decltype(d);
+  //using max_impl_type = uint32_t;
   static const type digit = d;
   static const type max = num_base-1;
   static const type base = num_base;
   using unit = Digit<1,num_base>;
+  using zero = Digit<0,num_base>;
 };
 
 template <typename ... Ds>
@@ -130,7 +139,7 @@ struct MakeNaturalNumber
     typename Concatenate < 
       NaturalNumber< Digit<d % base, base> >, 
     typename std::conditional< 
-      (d/base) ==0,
+      (d/base) == 0,
     NaturalNumber<>,
     typename MakeNaturalNumber<d/base, base>::type
       >::type
@@ -238,6 +247,45 @@ struct Less< NaturalNumber<>, NaturalNumber<B,Bs...> >
   static const bool value = true;
 };
 
+/* ################## Multiplication IMPLEMENTATION ################################# */
+
+template<typename A>
+struct Multiply< NaturalNumber<A>, NaturalNumber<> > 
+{
+  using type = NaturalNumber<>;
+};
+
+template<typename A>
+struct Multiply< NaturalNumber<>, NaturalNumber<A> > 
+{
+  using type = NaturalNumber<>;
+};
+
+template<typename A, typename NB>
+struct Multiply< NaturalNumber<A>, NB> 
+{
+  private:
+    using B = typename FirstDigit<NB>::type;
+    using NBs = typename TailNumber<NB>::type;
+    using digit_type = typename A::type;
+    static_assert( sizeof(uint64_t) == 2*sizeof(digit_type) );
+    static_assert( A::base == B::base);
+    static const uint64_t base = A::base == 1 ? uint64_t(std::numeric_limits<digit_type>::max())+1 : A::base ;
+    static const uint64_t da = A::digit; 
+    static const uint64_t db = B::digit;
+    static const uint64_t ab = da*db;
+    using N1 = make_natural_number_t<ab,A::base>;
+  public:
+    using type = add_t < N1, typename Concatenate< NaturalNumber<typename A::zero>,  
+              typename Multiply<NaturalNumber<A>, NBs >::type >::type >;
+};
+
+template<typename A, typename NB, typename...As>
+struct Multiply< NaturalNumber<A,As...>, NB> 
+{
+  using type = add_t < typename Multiply< NaturalNumber<A>, NB>::type,  
+                       typename Concatenate< NaturalNumber<typename A::zero>, typename Multiply< NaturalNumber<As...>, NB>::type >::type >;
+};
 
 #endif
 

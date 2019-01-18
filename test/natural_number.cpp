@@ -17,7 +17,6 @@
  */
 
 #include "../NaturalNumber.h"
-#include "../Float.h"
 
 #include <any>
 #include <iostream>
@@ -85,10 +84,12 @@ struct Str
   std::string value;
 };
 
+
+
 template<typename Number>
 std::ostream & operator<<(std::ostream & os, const Str<Number> & s)
 {
-  using D1 = typename FirstDigit<Number>::type;
+  //using D1 = typename FirstDigit<Number>::type;
   os << s.value;
   return os;
 };
@@ -134,14 +135,14 @@ struct Inc<0, N>
   };
 };
 
-
-//template <int N>
-//constexpr vector<int> range(void)
-//{
-//  std::vector<int> r(N);
-//  for (int i{0};i<N;++i) r[i] = i;
-//  return r;
-//};
+//template <typename T>
+//std::string Show(const  T  & t);
+//
+//template <bool>
+std::string Show(const bool & t)
+{
+  return t ? "True" : "False";
+};
 
 int main()
 {
@@ -161,11 +162,23 @@ int main()
   std::cout << "92356 = " << n92356() << std::endl;
   using n73212 = make_natural_number_t<73212>;
   std::cout << "73212 = " << n73212() << std::endl;
-  std::cout << "12356 + 73212 = " << add_t<n92356, n73212>() << std::endl;
-  //multiply doesnt work yet
-  //std::cout << multiply_t<n92356,n73212>() << std::endl;
-  std::cout << "if 12356 + 73212 = 165568 ?  " << (is_equal<make_natural_number_t<165568>, add_t<n92356, n73212> > ? "Yes" : "No"  ) << std::endl;;
+  using sum1 = add_t<n92356, n73212>;
+  
+  std::cout << "12356 + 73212 = " << sum1() << std::endl;
+  std::cout << "Whether 12356 + 73212 = 165568 ?  " << Show(is_equal<make_natural_number_t<165568>, sum1 >) << std::endl;
+  std::cout << "Whether 12356 + 73212 = 4626734574 ?  " << Show(is_equal<make_natural_number_t<462673457>, sum1 >) << std::endl;
 
+  std::cout << "Check comparizon:" << std::endl;
+  std::cout << "Whether 1 < 2 ? " << Show(is_less<n1,n2>) << std::endl;
+  std::cout << "Whether 2 < 1 ? " << Show(is_less<n2,n1>) << std::endl;
+  using n6 = multiply_t<n2,n3>;
+  std::cout << n6() << std::endl;
+  using n18 = multiply_t<n6,n3>;
+  using n18x18 = multiply_t<n18, n18>;
+  std::cout << n18x18() << std::endl;;
+  using n104976 =multiply_t<n18x18,n18x18>;
+  using n104976pow2 =multiply_t<n104976,n104976>;
+  std::cout << n104976pow2() << std::endl;;
 };
 
 
