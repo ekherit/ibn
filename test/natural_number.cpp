@@ -155,9 +155,11 @@ int main()
   using sum_1_2 = add_t<n1,n2>;
   std::cout << "1+2 = " << sum_1_2() << std::endl;
   using n3 = make_natural_number_t<3>;
-  static_assert( is_same< n3, sum_1_2>::value );
+  std::cout << "n3 = " << n3() << std::endl;
+  std::cout << "n1+n2  = " << sum_1_2() << std::endl;
+  //static_assert( is_same< n3, sum_1_2>::value );
   using sum_27_3 = add_t<n27,n3>;
-  std::cout << "1+2 = " << sum_27_3() << std::endl;
+  std::cout << "27+3 = " << sum_27_3() << std::endl;
   using n92356 = make_natural_number_t<92356>;
   std::cout << "92356 = " << n92356() << std::endl;
   using n73212 = make_natural_number_t<73212>;
@@ -179,6 +181,20 @@ int main()
   using n104976 =multiply_t<n18x18,n18x18>;
   using n104976pow2 =multiply_t<n104976,n104976>;
   std::cout << n104976pow2() << std::endl;;
+  using n18_b3 = make_natural_number_t<18,3>;
+  std::cout << n18_b3() << std::endl;
+  //using test_sum = add_t<n18_b3,n18>;
+  //std::cout << test_sum() << std::endl;
+  constexpr uint32_t max =std::numeric_limits<uint32_t>::max();
+  constexpr uint64_t max2 =std::numeric_limits<uint32_t>::max();
+  using big_n  = make_natural_number_t< max2, max2>;
+  std::cout << "uint32_t max = " << max << std::endl;
+  std::cout << big_n() << std::endl;
+  //std::cout << multiply_t<big_n,big_n>() << std::endl;
+  std::cout << to_base_t<n27,3>() << std::endl;;
+  std::cout << make_natural_number_t<27,3>() << std::endl;
+
+  //using big_n2  = make_natural_number_t< std::numeric_limits<uint32_t>::max(), 1>;
 };
 
 

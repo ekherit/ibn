@@ -30,12 +30,13 @@
 template <typename ... Ds>
 struct NaturalNumber;
 
-using DigitImplType = uint32_t; 
+using DigitImplType = uint64_t; 
+static constexpr DigitImplType MAX_BASE = (0x1L<<32);
 
-template< DigitImplType d, DigitImplType num_base=1>
+template< DigitImplType d, DigitImplType num_base=MAX_BASE>
 struct Digit;
 
-template <DigitImplType d, DigitImplType base=10> 
+template <unsigned long d, DigitImplType base=MAX_BASE> 
 struct MakeNaturalNumber;
 
 
@@ -51,10 +52,12 @@ struct Add;
 template<typename NA, typename NB>
 struct Multiply;
 
+template<typename N, DigitImplType newBase>
+struct ToBase;
 
 /* #####   Some helper functions ################################################ */
 
-template <DigitImplType d, DigitImplType base=10> 
+template <uint64_t d, DigitImplType base=10> 
 using make_natural_number_t = typename MakeNaturalNumber<d,base>::type;
 
 template <typename A, typename B> 
@@ -70,6 +73,8 @@ template <typename A, typename B>
 constexpr bool is_equal = Equal<A,B>::value;
 
 
+template<typename N, DigitImplType B>
+using to_base_t  = typename ToBase<N,B>::type;
 
 
 
@@ -79,7 +84,6 @@ template< DigitImplType d, DigitImplType num_base>
 struct Digit
 { 
   using type = decltype(d);
-  //using max_impl_type = uint32_t;
   static const type digit = d;
   static const type max = num_base-1;
   static const type base = num_base;
@@ -114,8 +118,28 @@ struct TailNumber < NaturalNumber<D1,Ds...> >
   using type = NaturalNumber<Ds...>;
 };
 
-template <typename N1, typename N2>
+template <typename N>
+struct LastDigit;
+
+template<typename D1>
+struct LastDigit< NaturalNumber<D1> >
+{
+  using type = D1;
+};
+
+template<typename D1, typename...Ds>
+struct LastDigit< NaturalNumber<D1,Ds...> >
+{
+  using type = typename LastDigit<NaturalNumber<Ds...>>::type;
+};
+
+
+
+template <typename N1, typename N2, typename...Ns>
 struct Concatenate;
+
+template<typename N1, typename N2>
+using conc_t = typename Concatenate<N1,N2>::type;
 
 template<typename A1, typename...Bs>
 struct Concatenate<NaturalNumber<A1>, NaturalNumber<Bs...>>
@@ -123,29 +147,52 @@ struct Concatenate<NaturalNumber<A1>, NaturalNumber<Bs...>>
   using type = NaturalNumber<A1,Bs...>;
 };
 
+//template<typename N1, typename N2>
+//struct Concatenate<N1, N2>
+//{
+//  using type = conc_t<
+//};
+
+//template< typename N1, typename N2, typename...Ns>
+//struct Concatenate
+//{
+//  using type = conc_t<conc_t<N1,N2>, Ns... >;
+//};
+
 template<typename N2>
 struct Concatenate<NaturalNumber<>, N2>
 {
   using type = N2;
 };
 
+//template<typename...Ts>
+//struct Conc;
+//
+//template<typename T>
+//struct Conc<T> { using type = T; };
+//
+//template<typename T>
+//struct Conc<T> { using type = T; };
 
 template <DigitImplType d, DigitImplType base> 
 struct MakeNaturalNumber
 {
-  using type = typename std::conditional< 
-    base==1, 
-    NaturalNumber< Digit<d,base> >,
-    typename Concatenate < 
+  static_assert( base <= MAX_BASE, "base must be less or equal MAX_BASE=2^32");
+  using type = typename Concatenate < 
       NaturalNumber< Digit<d % base, base> >, 
-    typename std::conditional< 
-      (d/base) == 0,
-    NaturalNumber<>,
-    typename MakeNaturalNumber<d/base, base>::type
-      >::type
+       typename std::conditional< (d/base) == 0,
+       NaturalNumber<>,
+      typename MakeNaturalNumber<d/base, base>::type
       >::type
       >::type ;
 };
+
+//template <unsigned long d> 
+//struct MakeNaturalNumber<d,1>
+//{
+//  using type = NaturalNumber<Digit<d,1>>;
+//};
+//
 
 template <DigitImplType base> 
 struct MakeNaturalNumber<0,base>
@@ -158,27 +205,29 @@ template<typename NA, typename NB>
 struct Add
 {
   private:
-    using A1 = typename FirstDigit<NA>::type;
+    using A1  = typename FirstDigit<NA>::type;
     using NAt = typename TailNumber<NA>::type;
-    using B1 = typename FirstDigit<NB>::type;
+    using B1  = typename FirstDigit<NB>::type;
     using NBt = typename TailNumber<NB>::type;
 
-    static const typename A1::type max_digit =  A1::base == 1 ? std::numeric_limits<typename A1::type>::max() : A1::max;
+    static_assert( A1::base == B1::base, "Digit's base mismatch");
     static const typename A1::type base =  A1::base;
+    static const typename A1::type max_digit =  A1::max;  
 
-    using sumA1B1  =  NaturalNumber<typename std::conditional<
-      base == 1, //full reprezentaion by long 
-      Digit< A1::digit + B1::digit, 1>, 
-      Digit< (A1::digit + B1::digit) % (A1::max+1), base> //num-base reperezentation
-    >::type>;
-
-    static const bool overflow =  max_digit - A1::digit < B1::digit;
+    static const uint64_t sum  = A1::digit + B1::digit;
+    static const uint64_t d1 =  sum % base;
+    static const uint64_t d2 =  sum / base;
+    using D1 = NaturalNumber< Digit<d1,base> >;
+    using D2 = NaturalNumber< Digit<d2,base> >;
+    using sumA1B1 = make_natural_number_t<A1::digit + B1::digit, A1::base>;
+    using sumTail = add_t<NAt,NBt>;
 
   public:
-    using type = typename std::conditional< overflow,
-      typename Concatenate< sumA1B1, typename Add< NAt, typename Add< NaturalNumber<typename A1::unit>, NBt>::type >::type>::type,
-      typename Concatenate< sumA1B1, typename Add< NAt, NBt>::type >::type
-      >::type;
+    //using type = conc_t<D1, add_t<D2, sumTail>>; 
+    using type = typename std::conditional< d2==0,
+          conc_t< D1, sumTail>,
+          conc_t< D1, add_t<D2, sumTail>> 
+            >::type;
 };
 
 template<typename...As>
@@ -268,16 +317,16 @@ struct Multiply< NaturalNumber<A>, NB>
     using B = typename FirstDigit<NB>::type;
     using NBs = typename TailNumber<NB>::type;
     using digit_type = typename A::type;
-    static_assert( sizeof(uint64_t) == 2*sizeof(digit_type) );
+    //static_assert( sizeof(uint64_t) == 2*sizeof(digit_type) );
     static_assert( A::base == B::base);
-    static const uint64_t base = A::base == 1 ? uint64_t(std::numeric_limits<digit_type>::max())+1 : A::base ;
+    //static const uint64_t base = A::base == 1 ? uint64_t(std::numeric_limits<digit_type>::max())+1 : A::base ;
+    static const uint64_t base = A::base;
     static const uint64_t da = A::digit; 
     static const uint64_t db = B::digit;
     static const uint64_t ab = da*db;
     using N1 = make_natural_number_t<ab,A::base>;
   public:
-    using type = add_t < N1, typename Concatenate< NaturalNumber<typename A::zero>,  
-              typename Multiply<NaturalNumber<A>, NBs >::type >::type >;
+    using type = add_t < N1, conc_t< NaturalNumber<typename A::zero>,  typename Multiply<NaturalNumber<A>, NBs >::type >>;
 };
 
 template<typename A, typename NB, typename...As>
@@ -285,6 +334,26 @@ struct Multiply< NaturalNumber<A,As...>, NB>
 {
   using type = add_t < typename Multiply< NaturalNumber<A>, NB>::type,  
                        typename Concatenate< NaturalNumber<typename A::zero>, typename Multiply< NaturalNumber<As...>, NB>::type >::type >;
+};
+
+
+template<typename D1, DigitImplType newBase>
+struct ToBase<NaturalNumber<D1>, newBase>
+{
+  using type = make_natural_number_t<D1::digit, newBase>;
+};
+
+
+template<typename N, DigitImplType newBase>
+struct ToBase
+{
+  using D1 = typename FirstDigit<N>::type;
+  using Ns = typename TailNumber<N>::type;
+  using N1=typename ToBase<NaturalNumber<D1>, newBase>::type;
+  using OldBase = make_natural_number_t<D1::base,newBase>;
+  using type = add_t<N1, 
+        multiply_t<OldBase, 
+        typename ToBase< Ns, newBase>::type>>;
 };
 
 #endif
