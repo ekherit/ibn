@@ -3,7 +3,7 @@
  *
  *       Filename:  integer_number.cpp
  *
- *    Description:  
+ *    Description:  Test for compile time integer number
  *
  *        Version:  1.0
  *        Created:  20.01.2019 11:55:00

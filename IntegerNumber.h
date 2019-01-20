@@ -27,18 +27,8 @@ struct IntegerNumber
   static const bool positivity = posit;
 };
 
-//template<typename N>
-//struct IntegerNumber<N,true>
-//{
-//  using number = N;
-//  static const bool positivity = true;
-//};
-//template<typename N>
-//struct IntegerNumber<N,false>
-//{
-//  using number = N;
-//  static const bool positivity = false;
-//};
+template<long N, DigitImplType base=10>
+using make_integer_number_t = IntegerNumber <  make_natural_number_t< (N > 0 ? N : -N) , base> , N>=0 >;
 
 template<typename N1, typename N2>
 struct Add< IntegerNumber<N1,true>, IntegerNumber<N2,true> >
@@ -51,15 +41,6 @@ struct Add< IntegerNumber<N1,false>, IntegerNumber<N2,false> >
 {
   using type =  IntegerNumber< add_t<N1,N2> , false>;
 };
-
-//template<typename N1, typename N2>
-//struct Add< IntegerNumber<N1,true>, IntegerNumber<N2,false> >
-//{
-//  using type =  typename std::conditional< is_less<N2,N1>, 
-//    IntegerNumber< sub_t<N1,N2>,  true>,
-//    IntegerNumber< sub_t<N2,N1>, false>
-//      >::type;
-//};
 
 template <typename N1, typename N2>
 struct Max
@@ -103,11 +84,4 @@ struct Multiply< IntegerNumber<N1,b1>, IntegerNumber<N2,b2> >
 {
   using type = IntegerNumber<   multiply_t<N1,N2>,!b1^b2 >;
 };
-
-
-
-
-template<long N, DigitImplType base=10>
-using make_integer_number_t = IntegerNumber <  make_natural_number_t< (N > 0 ? N : -N) , base> , N>=0 >;
-
 #endif

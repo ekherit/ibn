@@ -29,20 +29,7 @@
 
 #include <array>
 
-#include "NaturalNumber.h"
-
-
-
-
-
-template<typename Mantissa, typename Power>
-struct RealNumber
-{
-  using mantinssa = Mantissa;
-  using power = Power;
-};
-
-
+#include "IntegerNumber.h"
 
 template<long  Mantisa, long Power, long Base=10>
 struct Float 
