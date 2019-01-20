@@ -354,9 +354,14 @@ struct Subtract<NA,NaturalNumber<>>
 template<typename A, typename B>
 struct Subtract<NaturalNumber<A>,NaturalNumber<B>>
 {
-  //static_assert( B::digit <= A::digit,  "Subtrahend NB must less or equal then minuend" );
   using type = make_natural_number_t<A::digit-B::digit, A::base>;
 };
+
+//template<typename A1, typename A2,  typename B>
+//struct Subtract<NaturalNumber<A1,A2>,NaturalNumber<B>>
+//{
+//  using type = make_natural_number_t<(A2::digit*A1::base + A1::digit) - B::digit, A1::base>;
+//};
 
 template<typename NA, typename NB>
 struct Subtract
@@ -397,7 +402,7 @@ struct Subtract< NaturalNumber<A1,A2>, NaturalNumber<B1> >
   private:
     static_assert( A2::base+ A1::digit >= B1::digit );
   public:
-    using type = make_natural_number_t< A2::base*A2::digit - B1::digit, A2::base >;
+    using type = make_natural_number_t< (A2::base*A2::digit +A1::digit) - B1::digit, A2::base >;
 };
 
 /* ################ TOBASE IMPLEMENTATION ############################################ */
