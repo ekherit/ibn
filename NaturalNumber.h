@@ -3,8 +3,8 @@
  *
  *       Filename:  NaturalNumber.h
  *
- *    Description:  Compile time natural and integer numbers
- *    Natural numbers are: 0, 1,2, .... 
+ *    Description:  Compile time natural numbers with zero 
+ *    Natural numbers are: 1,2, .... 
  *
  *        Version:  1.0
  *        Created:  18.01.2019 11:55:10
@@ -31,7 +31,7 @@ template <typename ... Ds>
 struct NaturalNumber;
 
 using DigitImplType = uint64_t; 
-static constexpr DigitImplType MAX_BASE = (0x1L<<32);
+  static constexpr DigitImplType MAX_BASE = (0x1L<<32);
 
 template< DigitImplType d, DigitImplType num_base=MAX_BASE>
 struct Digit;
@@ -52,6 +52,9 @@ struct Add;
 template<typename NA, typename NB>
 struct Multiply;
 
+template<typename NA, typename NB>
+struct Subtract;
+
 template<typename N, DigitImplType newBase>
 struct ToBase;
 
@@ -65,6 +68,9 @@ using add_t = typename Add<A,B>::type;
 
 template <typename A, typename B> 
 using multiply_t = typename Multiply<A,B>::type;
+
+template <typename A, typename B> 
+using sub_t = typename Subtract<A,B>::type;
 
 template <typename A, typename B> 
 constexpr bool is_less = Less<A,B>::value;
@@ -89,6 +95,7 @@ struct Digit
   static const type base = num_base;
   using unit = Digit<1,num_base>;
   using zero = Digit<0,num_base>;
+  static constexpr type max_base = (0x1L<<32);
 };
 
 template <typename ... Ds>
@@ -147,32 +154,12 @@ struct Concatenate<NaturalNumber<A1>, NaturalNumber<Bs...>>
   using type = NaturalNumber<A1,Bs...>;
 };
 
-//template<typename N1, typename N2>
-//struct Concatenate<N1, N2>
-//{
-//  using type = conc_t<
-//};
-
-//template< typename N1, typename N2, typename...Ns>
-//struct Concatenate
-//{
-//  using type = conc_t<conc_t<N1,N2>, Ns... >;
-//};
-
 template<typename N2>
 struct Concatenate<NaturalNumber<>, N2>
 {
   using type = N2;
 };
 
-//template<typename...Ts>
-//struct Conc;
-//
-//template<typename T>
-//struct Conc<T> { using type = T; };
-//
-//template<typename T>
-//struct Conc<T> { using type = T; };
 
 template <DigitImplType d, DigitImplType base> 
 struct MakeNaturalNumber
@@ -187,12 +174,6 @@ struct MakeNaturalNumber
       >::type ;
 };
 
-//template <unsigned long d> 
-//struct MakeNaturalNumber<d,1>
-//{
-//  using type = NaturalNumber<Digit<d,1>>;
-//};
-//
 
 template <DigitImplType base> 
 struct MakeNaturalNumber<0,base>
@@ -223,7 +204,6 @@ struct Add
     using sumTail = add_t<NAt,NBt>;
 
   public:
-    //using type = conc_t<D1, add_t<D2, sumTail>>; 
     using type = typename std::conditional< d2==0,
           conc_t< D1, sumTail>,
           conc_t< D1, add_t<D2, sumTail>> 
@@ -317,9 +297,7 @@ struct Multiply< NaturalNumber<A>, NB>
     using B = typename FirstDigit<NB>::type;
     using NBs = typename TailNumber<NB>::type;
     using digit_type = typename A::type;
-    //static_assert( sizeof(uint64_t) == 2*sizeof(digit_type) );
     static_assert( A::base == B::base);
-    //static const uint64_t base = A::base == 1 ? uint64_t(std::numeric_limits<digit_type>::max())+1 : A::base ;
     static const uint64_t base = A::base;
     static const uint64_t da = A::digit; 
     static const uint64_t db = B::digit;
@@ -335,7 +313,51 @@ struct Multiply< NaturalNumber<A,As...>, NB>
   using type = add_t < typename Multiply< NaturalNumber<A>, NB>::type,  
                        typename Concatenate< NaturalNumber<typename A::zero>, typename Multiply< NaturalNumber<As...>, NB>::type >::type >;
 };
+/* ##################### SUBTRACT IMPLEMENTATION ################################################################################# */
 
+template<typename NA>
+struct Subtract<NA,NaturalNumber<>>
+{
+  using type = NA;
+};
+
+template<typename NA, typename NB>
+struct Subtract
+{
+  private:
+    static_assert( is_less<NB,NA> || is_equal<NB,NA>,  "Subtrahend NB must less or equal then minuend" );
+    using A1 = typename FirstDigit<NA>::type;
+    using B1 = typename FirstDigit<NB>::type;
+    using NAs = typename TailNumber<NA>::type;
+    using NBs = typename TailNumber<NB>::type;
+    //using A2 =  typename FirstDigit<NAs>::type;
+    using Nsub1 = NaturalNumber<Digit<A1::digit-B1::digit, A1::base>>;
+    using Nsub2 = NaturalNumber<Digit<A1::digit + A1::base-B1::digit, A1::base>>;
+    using One = NaturalNumber<typename B1::unit>;
+  public:
+    using type = typename std::conditional
+                 < A1::digit >= B1::digit,
+                   conc_t< Nsub1, sub_t<NAs,NBs> >,
+                   conc_t< Nsub2, sub_t
+                                  < 
+                                     sub_t < NAs, One >, 
+                                     NBs 
+                                  >
+                         >
+                 >::type;
+};
+
+
+template<typename A1,typename A2, typename B1>
+struct Subtract< NaturalNumber<A1,A2>, NaturalNumber<B1> >
+{
+  private:
+    static_assert( A2::base+ A1::digit >= B1::digit );
+  public:
+    using type = make_natural_number_t< A2::base*A2::digit - B1::digit, A2::base >;
+};
+
+/* ################ TOBASE IMPLEMENTATION ############################################ */
 
 template<typename D1, DigitImplType newBase>
 struct ToBase<NaturalNumber<D1>, newBase>

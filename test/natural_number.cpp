@@ -33,7 +33,7 @@ template<typename D1, typename...Ds>
 std::ostream & operator<<(std::ostream & os,  NaturalNumber< D1,Ds...> d)
 {
   //std::cout << D1::digit << " " << NaturalNumber< Ds...>();
-  std::cout << NaturalNumber< Ds...>() << " " << D1::digit;
+  std::cout << NaturalNumber< Ds...>() << D1::digit;
   return os;
 };
 
@@ -187,12 +187,27 @@ int main()
   //std::cout << test_sum() << std::endl;
   constexpr uint32_t max =std::numeric_limits<uint32_t>::max();
   constexpr uint64_t max2 =std::numeric_limits<uint32_t>::max();
-  using big_n  = make_natural_number_t< max2, max2>;
+  using big_n  = make_natural_number_t< max2,10>;
   std::cout << "uint32_t max = " << max << std::endl;
   std::cout << big_n() << std::endl;
   //std::cout << multiply_t<big_n,big_n>() << std::endl;
   std::cout << to_base_t<n27,3>() << std::endl;;
   std::cout << make_natural_number_t<27,3>() << std::endl;
+  using big2 = multiply_t<big_n,big_n>;
+  using big3 =multiply_t<big2,big2>;
+  //using big4 =multiply_t<big3,big3>;
+  //using big5 =multiply_t<big4,big4>;
+  //using big6 =multiply_t<big5,big5>;
+  std::cout << "big2 = " << big2() << std::endl;
+  std::cout << "big3 = " << big3() << std::endl;
+  //std::cout << "big4 = " << big4() << std::endl;
+  //std::cout << "big4_nb = " << to_base_t<big4, max2>() << std::endl;;
+  //std::cout << "big5 = " << big5() << std::endl;
+  //std::cout << "big6 = " << big6() << std::endl;
+
+  using sub1 = sub_t<big3,big2>;
+  std::cout << sub1() << std::endl;
+  //using sub2= typename Subtract<big2,big3>::type;
 
   //using big_n2  = make_natural_number_t< std::numeric_limits<uint32_t>::max(), 1>;
 };
