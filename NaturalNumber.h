@@ -140,6 +140,15 @@ struct LastDigit< NaturalNumber<D1,Ds...> >
   using type = typename LastDigit<NaturalNumber<Ds...>>::type;
 };
 
+template<typename N>
+struct HeadNumber;
+
+template<typename D1>
+struct HeadNumber< NaturalNumber<D1> >
+{
+  using type = NaturalNumber<>;
+};
+
 
 
 template <typename N1, typename N2, typename...Ns>
@@ -160,6 +169,11 @@ struct Concatenate<NaturalNumber<>, N2>
   using type = N2;
 };
 
+template<typename D1, typename...Ds>
+struct HeadNumber< NaturalNumber<D1, Ds...> >
+{
+  using type = conc_t< NaturalNumber<D1>, typename HeadNumber< NaturalNumber<Ds...> >::type>;
+};
 
 template <DigitImplType d, DigitImplType base> 
 struct MakeNaturalNumber
@@ -315,10 +329,33 @@ struct Multiply< NaturalNumber<A,As...>, NB>
 };
 /* ##################### SUBTRACT IMPLEMENTATION ################################################################################# */
 
+
+
+template<typename N>
+struct Norm //remove zero from higher positions
+{
+  using D = typename LastDigit<N>::type;
+  using H =  typename HeadNumber<N>::type;
+  using type = typename std::conditional< D::digit == 0,   typename Norm<H>::type, N >::type;
+};
+
+template<typename D>
+struct Norm< NaturalNumber<D> >
+{
+  using type = NaturalNumber<D>;
+};
+
 template<typename NA>
 struct Subtract<NA,NaturalNumber<>>
 {
   using type = NA;
+};
+
+template<typename A, typename B>
+struct Subtract<NaturalNumber<A>,NaturalNumber<B>>
+{
+  //static_assert( B::digit <= A::digit,  "Subtrahend NB must less or equal then minuend" );
+  using type = make_natural_number_t<A::digit-B::digit, A::base>;
 };
 
 template<typename NA, typename NB>
@@ -335,15 +372,21 @@ struct Subtract
     using Nsub2 = NaturalNumber<Digit<A1::digit + A1::base-B1::digit, A1::base>>;
     using One = NaturalNumber<typename B1::unit>;
   public:
-    using type = typename std::conditional
-                 < A1::digit >= B1::digit,
-                   conc_t< Nsub1, sub_t<NAs,NBs> >,
-                   conc_t< Nsub2, sub_t
-                                  < 
-                                     sub_t < NAs, One >, 
-                                     NBs 
-                                  >
-                         >
+    using type = typename std::conditional<
+                     is_equal<NB,NA>,
+                     make_natural_number_t<0,A1::base>,
+                     typename Norm<
+                         typename std::conditional
+                           < A1::digit >= B1::digit,
+                             conc_t< Nsub1, sub_t<NAs,NBs> >,
+                             conc_t< Nsub2, sub_t
+                                            < 
+                                               sub_t < NAs, One >, 
+                                               NBs 
+                                            >
+                                   >
+                           >::type
+                     >::type
                  >::type;
 };
 

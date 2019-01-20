@@ -207,6 +207,9 @@ int main()
 
   using sub1 = sub_t<big3,big2>;
   std::cout << sub1() << std::endl;
+
+  using sub2 = sub_t<n2,n1>;
+  std::cout << sub2() << std::endl;
   //using sub2= typename Subtract<big2,big3>::type;
 
   //using big_n2  = make_natural_number_t< std::numeric_limits<uint32_t>::max(), 1>;
