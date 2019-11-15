@@ -28,6 +28,16 @@ struct RealNumber
   using power = Power;
 };
 
+constexpr auto MakeRealNumber(double x) -> RealNumber < make_integer_number_t< 1>, make_integer_number_t<1> >
+{
+  return {} ;
+};
+
+template<typename Mantissa, typename Power>
+constexpr  RealNumber<Mantissa,Power>
+
+//template <double x>
+//using make_real_number = RealNumber<0,1>;
 
 template< typename M1, typename P1, typename  M2, typename P2>
 struct Multiply< RealNumber<M1,P1>, RealNumber<M2,P2> >

@@ -31,7 +31,7 @@ template <typename ... Ds>
 struct NaturalNumber;
 
 using DigitImplType = uint64_t; 
-  static constexpr DigitImplType MAX_BASE = (0x1L<<32);
+  static constexpr DigitImplType MAX_BASE = 0x1L<<32;
 
 template< DigitImplType d, DigitImplType num_base=MAX_BASE>
 struct Digit;
@@ -95,7 +95,7 @@ struct Digit
   static const type base = num_base;
   using unit = Digit<1,num_base>;
   using zero = Digit<0,num_base>;
-  static constexpr type max_base = (0x1L<<32);
+  static constexpr type max_base = 0x1L<<32;
 };
 
 template <typename ... Ds>
@@ -426,5 +426,9 @@ struct ToBase
         typename ToBase< Ns, newBase>::type>>;
 };
 
+/* ####################### DIVISION ##############################################*/
+
+template<typename A, typename B>
+struct Divide;
 #endif
 

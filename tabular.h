@@ -24,6 +24,8 @@
 #include <iostream>
 #include <typeinfo>
 #include <sstream>
+#include <iostream>
+#include <iomanip>
 
 #define IBN_TABULAR_DEBUG
 
@@ -216,16 +218,16 @@ class tabular
     }
     void print_info(void) const
     {
-      std::cout << setw(20) << "Cell widthes:";
+      std::cout << std::setw(20) << "Cell widthes:";
       for( auto & c : cells)
       {
-        std::cout << c.left_border << setw(10) << c.width << c.right_border;
+        std::cout << c.left_border << std::setw(10) << c.width << c.right_border;
       }
       std::cout << std::endl;
-      std::cout << setw(20) << "format:";
+      std::cout << std::setw(20) << "format:";
       for( auto & c : cells)
       {
-        std::cout << c.left_border << setw(10) << c.format<< c.right_border;
+        std::cout << c.left_border << std::setw(10) << c.format << c.right_border;
       }
       std::cout << std::endl;
     }
@@ -355,7 +357,7 @@ auto test_regex(std::string s, std::string regexpr)
   }
 }
 
-void test(std::string s = "|%10d%20.4f*2")
+void test(std::string s = "|%10d|%20.4f*2|")
 {
 (tabular(s) % 123 % 3.23452 % 2.72345234 % hline() % 3 % 24.23 % 234.6 % fhline() ).flush();
 }
