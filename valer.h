@@ -15,6 +15,7 @@
  *
  * =====================================================================================
  */
+#pragma once
 #ifndef IBN_VALER_H
 #define IBN_VALER_H
 
@@ -25,10 +26,16 @@ namespace ibn
   template < class T>
   struct valer
   { 
-    T value,error; //physical value is the value and the error
-    valer(void) {value=0; error=0;} // I dont know should i init valer or not
+    T value; //the value
+    T error; //and the error
+    valer(void) {} // I dont know should i init valer or not
     valer(const T & v) : value(v), error(0){}
     valer(const T & v, const T & e): value(v), error(e) {}
+
+    valer(double v) : value(v) { value = v;} 
+    operator double (void) const { return value; };
+    //valer & operator=(double v) { value = v; return *this;} 
+
 
     struct reference
     {
@@ -259,7 +266,7 @@ namespace ibn
 
   template <class T> inline valer<T> operator + (const T & x, const valer<T> & y) { return valer<T>(x)+=y; } 
   template <class T> inline valer<T> operator - (const T & x, const valer<T> & y) { return valer<T>(x)-=y; }
-  template <class T> inline valer<T> operator * (const T & x, const valer<T> & y) { return valer<T>(x)*=y; } 
+  template <class T> inline valer<T> operator * (const T & x, const valer<T> & y) { return valer<T>(y.value*x, y.error*x); } 
   template <class T> inline valer<T> operator / (const T & x, const valer<T> & y) { return valer<T>(x)/=y; }
 
 
