@@ -21,6 +21,7 @@
 #include <list>
 #include <string>
 #include <algorithm>
+#include <iostream>
 
 #include <sstream>
 
@@ -36,6 +37,80 @@ namespace ibn
       typedef std::map < std::string, int > par_t;
       char ** ARGV;
       par_t par;
+  };
+
+  class opt2 {
+    public:
+    opt2(int argc, char ** argv) {
+      ARGV = argv;
+      pars.reserve(argc);
+      for(int i=1;i<argc;++i) {
+        std::string_view s(argv[i]);
+        auto ptr = std::find(s.begin(),s.end(),'=');
+        std::string_view key(s.begin(), std::distance(s.begin(), ptr));
+        if(ptr!=s.end()) ptr++;
+        std::string_view value(ptr, std::distance(ptr, s.end()));
+        pars.push_back({i,key,value});
+      }
+    }
+
+    bool operator()(std::string_view key) const {
+      return count(key);
+    }
+
+    bool count(std::string_view key) const {
+      auto it = std::find_if(pars.begin(),pars.end(), 
+          [key](auto  s) {
+            return key==s.key;
+          } );
+      if(it==pars.end() ) return false;
+      return true;
+    };
+    template<typename T>
+      T get(std::string_view key, T && t) {
+        auto it = std::find_if(pars.begin(),pars.end(), 
+            [&key](auto & p) {
+            return p.key == key;
+            } );
+        if(it==pars.end() ) return T{t};
+        std::string s{it->value};
+        std::istringstream is(s);
+        T value;
+        if(! (is >> value)) { 
+          return T{t};
+        }
+
+        return value;
+      }
+
+    template<typename T>
+      T get(std::string_view key) {
+        return get<T>(key,T{});
+      }
+
+      void print(void)  {
+        for(const auto & p : pars) {
+          std::cout << p.idx << " " << p.key << "  " << p.value << std::endl; 
+        }
+      }
+
+      std::string_view operator[](int idx) {
+        return ARGV[idx];
+      };
+      bool operator[](std::string_view key) {
+        return count(key);
+      };
+    private:
+      struct option_t {
+        int idx;
+        std::string_view key;
+        std::string_view value;
+        //operator bool() const {
+        //};
+      };
+      //std::map<std::string_view, std::string_view> pars;
+      std::vector<option_t> pars;
+      char ** ARGV;
   };
 
   class opt	
