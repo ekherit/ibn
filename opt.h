@@ -23,21 +23,11 @@
 #include <algorithm>
 #include <iostream>
 
+#include <utility>
 #include <sstream>
 
 namespace ibn
 {
-  class SimpleOpt 
-  {
-    public:
-      SimpleOpt ( int argc ,char **  argv )	;
-      bool is ( const std::string &s);
-      template <class T> bool get ( const std::string &s, T * data );
-    private:
-      typedef std::map < std::string, int > par_t;
-      char ** ARGV;
-      par_t par;
-  };
 
   class opt2 {
     public:
@@ -48,13 +38,22 @@ namespace ibn
         std::string_view s(argv[i]);
         auto ptr = std::find(s.begin(),s.end(),'=');
         std::string_view key(s.begin(), std::distance(s.begin(), ptr));
-        if(ptr!=s.end()) ptr++;
+        if(ptr!=s.end()) ++ptr;
         std::string_view value(ptr, std::distance(ptr, s.end()));
         pars.push_back({i,key,value});
       }
     }
 
     bool operator()(std::string_view key) const {
+      return count(key);
+    }
+
+    template<typename T>
+    bool operator()(std::string_view key, T & t) const {
+      return  get(key,t);
+    }
+
+    bool is ( std::string_view key) {
       return count(key);
     }
 
@@ -66,26 +65,25 @@ namespace ibn
       if(it==pars.end() ) return false;
       return true;
     };
-    template<typename T>
-      T get(std::string_view key, T && t) {
-        auto it = std::find_if(pars.begin(),pars.end(), 
-            [&key](auto & p) {
-            return p.key == key;
-            } );
-        if(it==pars.end() ) return T{t};
-        std::string s{it->value};
-        std::istringstream is(s);
-        T value;
-        if(! (is >> value)) { 
-          return T{t};
-        }
 
-        return value;
+    template<typename T>
+      T get(std::string_view key, T && t) const {
+        auto it = find(key);
+        if(it==pars.end() ) return T{t};
+        return it->get(std::forward<T>(t));
       }
 
     template<typename T>
-      T get(std::string_view key) {
+      T get(std::string_view key) const {
         return get<T>(key,T{});
+      }
+
+    template <typename T> 
+      bool get ( std::string_view key, T * data ) const {
+        auto it = find(key);
+        if(it==pars.end() ) return false;
+        *data = it->get(T{});
+        return true;
       }
 
       void print(void)  {
@@ -105,13 +103,43 @@ namespace ibn
         int idx;
         std::string_view key;
         std::string_view value;
-        //operator bool() const {
-        //};
+
+        template<typename T>
+          T get(T && t) const {
+            T data;
+            if(parse(&t)) return data;
+            return T{t};
+          }
+
+        template<typename T>
+          T get(void) const {
+            return get(T{});
+          }
+          
+        template<typename T> 
+          bool parse(T * t) const {
+            std::string s{value};
+            std::istringstream is(s);
+            T data;
+            if(! (is >> data)) { 
+              return false;
+            }
+            *t = data;
+            return true;
+          }
       };
-      //std::map<std::string_view, std::string_view> pars;
+      std::vector<option_t>::const_iterator find(std::string_view key) const {
+          return std::find_if(
+              pars.begin(), pars.end(), 
+              [&key](auto & p) {
+                return p.key == key;
+              } );
+        }
       std::vector<option_t> pars;
       char ** ARGV;
   };
+
+  typedef opt2 SimpleOpt;
 
   class opt	
   {
@@ -247,34 +275,5 @@ namespace ibn
       return true;
     }
 
-
-
-  inline SimpleOpt::SimpleOpt ( int argc ,char **  argv )	
-  {
-    ARGV=argv;
-    for ( int i =0 ; i<argc; i++)	
-    {
-      std::string s = argv[i];
-      par[s] = i;
-    }
-  }
-
-  inline bool SimpleOpt::is ( const std::string &s)	
-  {
-    par_t::iterator p = par.find(s);
-    if ( p == par.end () ) return false;
-    return true;
-  }
-
-  template <class T> 
-    inline  bool SimpleOpt::get ( const std::string &s, T * data )	
-    {
-      par_t::iterator p = par.find(s);
-      if ( p == par.end () ) return false;
-      int i = p->second + 1;
-      std::istringstream input	(ARGV[i]);
-      input >> *data;
-      return true;
-    }
 }
 #endif //IBN_OPT_H
