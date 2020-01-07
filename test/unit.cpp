@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  unit2.cpp
+ *       Filename:  new_dimension.cpp
  *
- *    Description:  
+ *    Description:  test for new dimension algorithm
  *
  *        Version:  1.0
- *        Created:  17.07.2017 22:22:30
+ *        Created:  08.01.2019 00:34:07
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -17,204 +17,115 @@
  */
 
 #include "../unit.h"
-#include "../opt.h"
+#include "../unit_print.h"
+
+#include <type_traits>
+#include <typeinfo>
+#include <iostream>
+#include <iomanip>
+#include <map>
+#include <bitset>
+using namespace std;
 
 
-int main(int argc, char ** argv)
+using namespace ibn;
+int main()
 {
-  ibn::SimpleOpt opt(argc,argv);
-  if(opt.is("-b"))
-  {
-    using B0 = BaseDimension<0>;
-    using B1 = BaseDimension<1>;
-    using B2 = BaseDimension<2>;
-    std::cout << "Test for printing of the dimensions:\n";
-    std::cout << "B0: "   << B0()  << std::endl;
-    std::cout << "B1: "   << B1()  << std::endl;
-    std::cout << "B2: "   << B2()  << std::endl;
+  int test_number = 0;
+  using D =  Dimension<>;
+  using D0 = make_dimension<0>;
+  DMAP[0]="D0";
+  using D1 = make_dimension<1>;
+  DMAP[1]="D1";
+  using D2 = make_dimension<2>;
+  DMAP[2]="D2";
+  std::cout << "D:" << D() << std::endl;
+  std::cout << "D0:" << D0() << std::endl;
+  std::cout << "D1:" << D1() << std::endl;
 
-    using B02 = BaseDimension<0, std::ratio<2,1> >;
-    using B05 = BaseDimension<0, std::ratio<5,1> >;
-    using B0_10 = BaseDimension<0, std::ratio<1,10> >;
-    using B0_minus_2_3 = BaseDimension<0, std::ratio<-2,3> >;
-    std::cout << "Test for power initialization:\n";
-    std::cout << "B0^2: " << B02() << std::endl;
-    std::cout << "B0^5: " << B05() << std::endl;
-    std::cout << "B0^(1/10): " << B0_10() << std::endl;
-    std::cout << "B0^(-2/3): " << B0_minus_2_3() << std::endl;
-    std::cout << "Test for dimension reduction:\n";
-    using B02_3 = BaseDimension<0, std::ratio<8,12> >;
-    std::cout << "B0^(8/12) = B0^(2/3): " << B02_3() << std::endl;
-
-    std::cout << "Test of multiplication with same dimension" << std::endl;
-    using B0B0 = typename MultiplyBase<B0,B0>::type;
-    std::cout << "B0*B0 = " << B0B0() << std::endl;
-    std::cout << "B0*B0*B0 = " << MultiplyBase<B0, B0B0 >::type()  << std::endl;
-
-    std::cout << "Test for multiplication of different dimensions (result is sorted by dimension id)" << std::endl;
-    using U01 = MultiplyBase<B0,B1>::type;
-    std::cout << "U01 = B0*B1 = " << U01() << std::endl;
-    using U001 = Multiply<Dimension<B0>,U01>::type;
-    std::cout << "U001 = B0*B0*B1 = " << U001() << std::endl;
-  }
-
-  /*  
-    using U0001 = Multiply<Dimension<B0>,U001>::type;
-    std::cout << "U0001 = B0*B0*B0*B1 = " << U0001() << std::endl;
-
-    using U10001 = Multiply<B1,U0001>::type;
-    std::cout << "U10001 = B1*B0*B0*B0*B1 = " << U10001() << std::endl;
-
-    std::cout << "Проверка перемножения, когда схлопываются размерности" << std::endl;
-    using U110001 = Multiply<B1, U10001>::type;
-    std::cout << "U110001 = B1 * U10001   = "<< U110001() << std::endl;
-
-    std::cout << "Проверка перемножения, когда схлопываются размерности" << std::endl;
-    using U2110001 = Multiply<B2, U110001>::type;
-    std::cout << "U2110001 = B2 * U110001   = "<< U2110001() << std::endl;
-
-    std::cout << "Проверка перемножения, добавление степени в середине" << std::endl;
-    using U12110001 = Multiply<B1, U2110001>::type;
-    std::cout << "U12110001 = B1 * U2110001   = "<< U12110001() << std::endl;
-
-    std::cout << "Проверка перемножения двух составных размерностей" << std::endl;
-    using UU = Multiply<U2110001, U12110001>::type;
-    std::cout << "U12110001 * U2110001   = "<< UU() << std::endl;
-
-    std::cout << "Проверка перемножения справа" << std::endl;
-    using UU = Multiply<U2110001, U12110001>::type;
-    std::cout << "U12110001 * U2110001   = "<< UU() << std::endl;
-  }
+  int shift=20;
+  using DxD = Multiply<D,D>::type;
+  std::cout << "Test # " << ++test_number << " multiplication on dimensionless: " << std::endl;
+  std::cout << setw(shift) << "D  * D = " << DxD() << endl;
+  using DxD0 = Multiply<D,D0>::type;
+  std::cout << setw(shift) << "D  * D0 = " << DxD0() << endl;
+  using D0xD = Multiply<D0,D>::type;
+  std::cout << setw(shift) << "D0 * D  = " << D0xD() << endl;
 
 
-  if(opt.is("-p"))
-  {
-    using Length = unit<Dimension<BaseDimension<0>>>;
-    using Time =   unit<Dimension<BaseDimension<1>>>;
-    using Mass =   unit<Dimension<BaseDimension<2>>>;
-    using Energy = unit<Dimension<BaseDimension<3>>>;
+  using D0xD0 =  Multiply<D0,D0>::type;
+  std::cout << "Test square of D0: D0 * D0 =  " << D0xD0() <<std::endl;
+  using D0xD0xD0 =  Multiply<D0,D0xD0>::type;
+  std::cout << "Test square of D0: D0 * D0 * D0 =  " << D0xD0xD0() <<std::endl;
+  //std::cout << "DR = " << Multiply<D0,D0>::DR() << std::endl;
+  //std::cout << "D1DR = " << Multiply<D0,D0>::MD1DR() << std::endl;
+  //std::cout << "MM = " << Multiply<D0,D1>::MM() << std::endl;
+  //std::cout << "id1 = " << Multiply<D1,D0>::id1 << std::endl;
+  //std::cout << "id2 = " << Multiply<D1,D0>::id2 << std::endl;
+  using D0xD1 =  Multiply<D0,D1>::type;
+  std::cout << "                   D0 * D1 =  " << D0xD1() <<std::endl;
+  using D1xD0 =  Multiply<D1,D0>::type;
+  std::cout << "                   D1 * D0 =  " << D1xD0() <<std::endl;
+  using D1xD2 =  Multiply<D1,D2>::type;
+  std::cout << "                   D1 * D2 =  " << D1xD2() <<std::endl;
 
-    //проверка физических величин
-    Mass g; //this is the gramm
-    Length cm; //this is cm
-    Time  s; //second
+  DMAP[3]="A";
+  using A = Dimension<BaseDimension<3, std::ratio<-5,1> >> ;
+  std::cout << "Test square of A =  " << A() <<std::endl;
 
-    using Area = decltype(cm*cm);
-    using Volume = decltype(Area()*cm);
-    Area theArea = 28*32*cm*cm;
-    Volume theVol = theArea*2*cm;
-    std::cout << "theArea = " << theArea << " cm^2" << std::endl;
-    std::cout << "theVol = " << theVol << " cm^3" << std::endl;
+ using D0xD1xD2 = Multiply<D0,D1xD2>::type;
+  std::cout << "Test square of D0xD1xD2 =  " << D0xD1xD2() <<std::endl;
+  using D2xD0xD1 = Multiply<D2,D0xD1>::type;
+  std::cout << "Test square of D2xD0xD1 =  " << D2xD0xD1() <<std::endl;
+  //std::cout << "ID(7) = " << hex << int('7') << bitset<8>('7') << std::endl;
+  //using D0xD1xD2_2 = Multiply<D0xD1, D2>::type;
+  std::cout << "(D0xD1)xD2 =  " << D0xD1xD2() <<std::endl;
+  using TEST_DIM2 = Dimension<BaseDimension<1>, BaseDimension<2> >;
+  std::cout << "HEAD (1,2) " << typename Tail<TEST_DIM2>::type() << std::endl;
+  using TEST_DIM3 = Dimension<BaseDimension<0>, BaseDimension<1>,BaseDimension<2> >;
+  std::cout << "TEST_DIM3::size = " << TEST_DIM3::size << std::endl;
+  std::cout << "first TEST_DIM3 = " << Dimension< First<TEST_DIM3>::type >() << std::endl;
+  std::cout << "HEAD TEST_DIM3 " << typename Tail<TEST_DIM3>::type() << std::endl;
 
-    auto minutes = 60*s;
-    auto day = 86400*s;
-    auto month = 30*day;
-    auto year = 12*month;
-    std::cout << "day is " << day << " s" << std::endl;
-    std::cout << "month is " << month << " s" << std::endl;
-    std::cout << "year approximate is " << year << " seconds" << std::endl;
-    //std::cout << "year approximate is " << double(year/day) << " days" << std::endl;
-    std::cout << "One minute is " << minutes << std::endl;
-    //std::cout << "year approximate is " << year/minutes << " minutes" << std::endl;
+  auto s = make_unit<0>(); DMAP[0]="T";
+  auto cm = make_unit<1>(); DMAP[1]="L";
+  auto g = make_unit<2>(); DMAP[2]="M";
 
-    // auto test_sum = cm + g; this is unable to compile
+  auto J = g*cm*cm/s/s;
+  using Length_t = decltype(cm)::dimension;
+  using Time_t   = decltype(s)::dimension;
+  using Mass_t   = decltype(g)::dimension;
+  using Energy_t = decltype(J)::dimension;
 
-    auto test = cm*s;
-    std::cout << "cm has dimention: " << decltype(cm)::dimension() << std::endl;
-    std::cout << "g has dimention: " << decltype(g)::dimension() << std::endl;
-    std::cout << "s has dimention: " << decltype(s)::dimension() << std::endl;
-    std::cout << "area has dimention: " << Area::dimension() << std::endl;
-    std::cout << "cm*s = " << test << " dimension = " << decltype(test)::dimension() << std::endl;
-    std::cout << "cm*cm*s = " << cm*cm*s << " dimension = " << decltype(cm*cm*s)::dimension() << std::endl;
-    std::cout << "cm^3*s = " << cm*cm*cm*s << " dimension = " << decltype(cm*cm*cm*s)::dimension() << std::endl;
-    std::cout << "cm^3*s^2 = " << s*cm*cm*cm*s << " dimension = " << decltype(s*cm*cm*cm*s)::dimension() << std::endl;
-    std::cout << "cm^3*s^2*g = " << s*cm*cm*cm*s*g << " dimension = " << decltype(s*cm*cm*cm*s*g)::dimension() << std::endl;
+  auto l = 2e5*cm+1.3e4*cm;
+  auto t = 13*s;
+  auto v = l/t;
+  using Velocity_t = decltype(v)::dimension;
 
-    std::cout << "Test for division: " << std::endl;
-    std::cout << "velocity: cm/s = " << cm/s << " dimension = " << decltype(cm/s)::dimension() << std::endl;
+  using test = typename Multiply< Time_t, Velocity_t>::type;
+  //using test2 = typename Multiply< Velocity_t, Time_t>::type;
+  std::cout << v.data << " " <<Velocity_t() << std::endl;
+  std::cout << "V*T : " << test() << std::endl;
+  auto rho = 1.0*g/(cm*cm*cm);
+  auto v2 = v*v;
+  auto P = rho*v*v;
+  auto test2 = P*v*t*l/(g*g*g*v2);
+  std::cout << test2.data << " " << decltype(test2)::dimension() << std::endl;
 
-    //speed of light
-    auto c = 2.99792458e10*cm/s;
-    std::cout << "Speed of light c = " << c << " cm/s" << std::endl;
-    //auto test = c*year;
-    c*c;
-    std::cout << "Light travel for year : " << c*year << " cm " << decltype(c*year)::dimension() << std::endl;
+  auto keV = 1.6e-12*J;
+  double x = keV/J;
+  std::cout << "electron rest energy: " << x << " Joules" << std::endl;
 
-    auto nodim_test = c/c;
-    std::cout << "Dimentionless c/c = " << nodim_test << std::endl;
-
-
-    auto some_dim1 = 125*cm*cm*cm/s/g*s*s;
-    auto some_dim2 = some_dim1*3*cm;
-    std::cout << some_dim2/some_dim1 << " cm " << decltype(some_dim2/some_dim1)::dimension() << std::endl;
-
-    auto minutes_in_the_year = (year/minutes);
-    std::cout << "year has " << minutes_in_the_year << " minutes" << " dim = " << decltype(year/minutes)::dimension() << std::endl;
-
-    auto test_for_dimensionless = year/minutes + 20.;
-    auto test_for_mimentionless_subtraction = year/day -  5.; 
-    std::cout << "Test for demintion less add " << test_for_dimensionless << ", dim = " << std::endl;
-    std::cout << "Test for demintion less subtraction " << test_for_mimentionless_subtraction << std::endl;
-
-    unit<BaseDimension<10>> eV;
-    auto keV = 1e3*eV;
-    auto MeV = 1e6*eV;
-    auto GeV = 1e9*eV;
-
-    auto me = 0.511*MeV;
-    auto J = 1./1.6e-19*eV;
-    auto erg = 1./1.6e-12*eV;
-
-    std::cout << "Electron mass is : "  << me/erg/(c*c) << " g " << std::endl;
-
-    //double a = 1.0*me/J;
-    //std::cout << "a = " << a << std::endl;
-    //double b = me/J + 0.0;
-
-    //unit<20,3,double> nodim;
-    //std::cout << " me/J * month/day: " <<  decltype(me/J*month/day)::dimension() << std::endl;
-    double b =me/J+0.0;
-    std::cout << "b = " << b << std::endl;
-    //double b2 = me*month/J/day+0.0;
-    //std::cout << "b2 = " << b2 << std::endl;
-    //std::cout << decltype(me/J)::dimension() << std::endl;
-
-    ///std::cout << "Test for power" <<std::endl;
-    ///auto keV2 = pow(keV/eV,2.0);
-    ///std::cout << keV2 << std::endl;
-
-    //  std::cout << "dimesionless(Dimension<B0>) == " << is_dimensionless<Dimension<BaseDimension<0>>>::value << std::endl;
-    //  std::cout << "dimesionless(B0) == " << is_dimensionless<BaseDimension<0>>::value << std::endl;
-    //auto candela = make_unit();
-    //std::cout << "Test for make_unit: candella dimension: " << decltype(candela)::dimension() << std::endl;
-
-    //auto ampere = make_unit();
-    //std::cout << "Test for make_unit: ampere dimension: " << decltype(ampere)::dimension() << std::endl;
-  }
-
-  if(opt.is("--SGS"))
-  {
-    using Time = new_dimension<0>;
-    using Length = new_dimension<1>;
-    using Mass = new_dimension<2>;
-
-    auto s =  unit<Time>();
-    auto cm = unit<Length>();
-    auto g =  unit<Mass>();
-    std::cout << "Time: " << decltype(s)::dimension() << std::endl;
-    std::cout << "Length: " << decltype(cm)::dimension() << std::endl;
-    std::cout << "Mass: " << decltype(g)::dimension() << std::endl;
-    auto a = cm/s/s;
-    std::cout << "Acceleration: " << decltype(a)::dimension() <<std::endl;
-    auto F =  a*g;
-    std::cout << "Force: " << decltype(F)::dimension() <<std::endl;
-    auto J =  a*g*cm;
-    std::cout << "Energy: " << decltype(J)::dimension() <<std::endl;
-    std::cout << "Energy/Force: " << decltype(J/F)::dimension() <<std::endl;
-    auto eV = 1.6e-19*J;
-    //double x = eV/J;
-    std::cout << "eV = " << eV/J << " J" << std::endl;
-  }
-*/
+  std::cout << pow(2.3, 3.3) << std::endl;
+  auto test3 = keV.pow<4>();
+  using test4 = Power<decltype(J)::dimension,3>::type;
+  //using test4 = Power<D0xD1xD2,3>::type;
+  std::cout << "test 3 = "  << test3.data << " " << decltype(test3)::dimension() << std::endl;
+  std::cout << "test 4 = "  << test4() << std::endl;
+  auto test5 = keV.pow<1,3>();
+  std::cout << "test 5 = "  << test5.data << " " << decltype(test5)::dimension() << std::endl;
+  //for(auto i : mm)
+  //{
+  //  std::cout << i.first << "   " << i.second << "  " << bitset<8>(i.first) << std::endl;
+  //}
 }
-
