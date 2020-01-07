@@ -107,7 +107,7 @@ namespace ibn
         template<typename T>
           T get(T && t) const {
             T data;
-            if(parse(&t)) return data;
+            if(parse(&data)) return data;
             return T{t};
           }
 
