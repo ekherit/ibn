@@ -17,6 +17,7 @@ std::ostream & operator << (std:: ostream & os,  const ibn::valer<T> & d) {
 
 template<typename T> using lim = std::numeric_limits<T>;
 
+
 int main(int argc, char ** argv) {
   using namespace ibn;
   using namespace std;
@@ -163,6 +164,8 @@ int main(int argc, char ** argv) {
     cout << 3.*x << endl;
     cout << x+2. << endl;
     cout << 2.+x << endl;
+    cout << x-2. << endl;
+    cout << 2.-x << endl;
     x={2,3};
     y={1,1};
     cout << (x*=3.0) << endl;
@@ -182,6 +185,8 @@ int main(int argc, char ** argv) {
     valer a1 = {2.3,5.3};
     cout << valer{5.6,8.3} << endl;
     cout << valer{6,8} << endl;
+    valer<const double &> a2(a1);
+    valer<double> a3(a2);
   }
   {
     std::vector< valer<double> > v;
@@ -189,6 +194,45 @@ int main(int argc, char ** argv) {
       v.push_back({sqrt(i),sqrt(sqrt(i))});
     }
     for(auto & x : v) cout << x << endl;
+  }
+  {
+    cout << "Test for referece and values" << endl;
+    double value=2.0;
+    double error = 0.5;
+    valer<double & > v(value,error);
+    valer<double> v2(1.5,0.3);
+    cout << v+v2 << endl;
+    cout << v2+v << endl;
+    cout << v*v2 << endl;
+    cout << v2*v << endl;
+    cout << v*v << endl;
+    cout << v/v2 << endl;
+    cout << v2/v << endl;
+  }
+  {
+    auto  fun_const_ref = [](const ibn::valer<double> & v) {
+      std::cout << "fun_const_ref " << v << std::endl;
+    };
+    auto fun_const_ref_ref = [] (const ibn::valer<double> && v) {
+      std::cout << "fun_const_ref_ref " << v << std::endl;
+    };
+    auto fun_const_cref = [] (const ibn::valer<const double> & v) {
+      std::cout << "fun_const_cref " << v << std::endl;
+    };
+    valer<double> v(1.5,0.3);
+    double value=2.0;
+    double error = 0.5;
+    valer<double & > vref(value,error);
+    valer<const double & > vcref(value,error);
+    fun_const_ref(v);
+    fun_const_ref(vref);
+    fun_const_ref(vcref);
+    //fun_const_ref_ref(v);
+    fun_const_ref_ref(vref);
+    fun_const_ref_ref(vcref);
+    fun_const_cref(v);
+    fun_const_cref(vref);
+    fun_const_cref(vcref);
   }
 
   return 0;

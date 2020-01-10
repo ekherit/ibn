@@ -29,8 +29,8 @@ namespace ibn
     using type = typename std::remove_const<typename std::remove_reference<T>::type>::type;
     using referenece = type &;
     //using pointer = T*;
-    T value; //the value
-    T error; //and the error
+    T value; //the value or reference to value
+    T error; //and the error or reference to error
 
     constexpr valer(void)  = default; // I dont know should i init valer or not
     constexpr valer(const type & v)                  noexcept : value(v),       error(0)       {}
@@ -43,6 +43,9 @@ namespace ibn
 
     //dont know why it doest work with const valer<T&> &
     constexpr valer(valer<type&> & v)            noexcept : value(v.value), error(v.error) {}
+    constexpr valer(valer<const type&> & v)      noexcept : value(v.value), error(v.error) {}
+    //constexpr valer(const valer<type&> & v)            noexcept : value(v.value), error(v.error) {}
+    //constexpr valer(const valer<const type&> & v)      noexcept : value(v.value), error(v.error) {}
 
     //assignment operators
     constexpr valer<T> & operator=(const type & v) noexcept { 
@@ -125,33 +128,23 @@ namespace ibn
 
 
 
-    friend valer<T> operator + (const valer<T> & x, const valer<T> & y) noexcept { return (valer<T>(x) += y ); };
+    valer<type> operator + (const type & y)         noexcept { return {valer<type>(*this) += y}; };
+    valer<type> operator + (const valer<type> & y)  noexcept { return {valer<type>(*this) += y}; };
+    valer<type> operator + (const valer<type&> & y) noexcept { return {valer<type>(*this) += y}; };
 
-    friend valer<T> operator - (const valer<T> & x, const valer<T> & y) noexcept { return (valer<T>(x) -= y ); };
+    valer<type> operator - (const type & y)         noexcept { return {valer<type>(*this) -= y}; };
+    valer<type> operator - (const valer<type> & y)  noexcept { return {valer<type>(*this) -= y}; };
+    valer<type> operator - (const valer<type&> & y) noexcept { return {valer<type>(*this) -= y}; };
 
-    friend valer<T> operator * (const valer<T> & x, const valer<T> & y) noexcept { return (valer<T>(x) *= y ); };
+    valer<type> operator * (const type & y)         noexcept { return {valer<type>(*this) *= y}; };
+    valer<type> operator * (const valer<type> & y)  noexcept { return {valer<type>(*this) *= y}; };
+    valer<type> operator * (const valer<type&> & y) noexcept { return {valer<type>(*this) *= y}; };
 
-    friend valer<T> operator / (const valer<T> & x, const valer<T> & y) noexcept { return (valer<T>(x) /= y ); };
+    valer<type> operator / (const type & y)         noexcept { return {valer<type>(*this) /= y}; };
+    valer<type> operator / (const valer<type> & y)  noexcept { return {valer<type>(*this) /= y}; };
+    valer<type> operator / (const valer<type&> & y) noexcept { return {valer<type>(*this) /= y}; };
 
-
-    friend valer<T> operator + (const T & x, const valer<T> & y) noexcept { return (valer<T>(x) += y ); };
-
-    friend valer<T> operator - (const T & x, const valer<T> & y) noexcept { return (valer<T>(x) -= y ); };
-
-    friend valer<T> operator * (const T & x, const valer<T> & y) noexcept { return (valer<T>(x) *= y ); };
-
-    friend valer<T> operator / (const T & x, const valer<T> & y) noexcept { return (valer<T>(x) /= y ); };
-
-
-    friend valer<T> operator + (const valer<T> & x, const T & y) noexcept { return (valer<T>(x) += y ); };
-
-    friend valer<T> operator - (const valer<T> & x, const T & y) noexcept { return (valer<T>(x) -= y ); };
-
-    friend valer<T> operator * (const valer<T> & x, const T & y) noexcept { return (valer<T>(x) *= y ); };
-
-    friend valer<T> operator / (const valer<T> & x, const T & y) noexcept { return (valer<T>(x) /= y ); };
-
-    friend valer<T> operator ^ (const valer<T> & x, const valer<T> & y) noexcept {
+    friend valer<type> operator ^ (const valer<T> & x, const valer<T> & y) noexcept {
       return { pow(x.value, y.value), 
         sqrt(  pow( y.value * pow(x.value, y.value-1) * x.error, 2.0)  +
                pow( log(x.value)*pow(x.value,y.value) ,2.0) ) };
