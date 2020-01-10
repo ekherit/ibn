@@ -73,9 +73,10 @@ int main(int argc, char ** argv) {
     cout << setprecision(lim<type_t>::digits10) << v << ":  OK " << endl;
   }
 
-  valer v(5);
+  valer v(5.3);
   cout << v << endl;
   valer v2 = 23.3;
+  valer v3 = 3;
   cout << v2 << endl;
   cout << typeid(v2.value).name() << endl;
   std::cout << "Test implicit conversion: " << std::endl;
@@ -103,11 +104,13 @@ int main(int argc, char ** argv) {
     cout << v << "  -> " << result << " OK " << endl;
   }
 
+  std::cout << "Test reference: " << endl;
   {
-    std::cout << "Test reference " << std::endl;
+    std::cout << "  double, double " << std::endl;
     double value=3.14;
     double error=2.72;
     valer <double &>  v{value,error};
+    //valer <double &>  v(value,error);
     v.value *= 2;
     v.error *= 3;
     if( 3.14*2 == value && 2.72*3 == error) {
@@ -115,7 +118,13 @@ int main(int argc, char ** argv) {
     }
   }
   {
-    std::cout << "Test const reference " << std::endl;
+    std::cout << " from valer<double,double> " << std::endl;
+    valer<double> v(3.1,1.4);
+    valer <double &>  ref(v);
+    cout << ref << "  OK " << endl;
+  }
+  {
+    std::cout << " from const double, const double " << std::endl;
     double value=3.14;
     double error=2.72;
     valer <const double &>  v{value,error};
@@ -126,14 +135,17 @@ int main(int argc, char ** argv) {
     }
   }
   {
-    std::cout << "Test initialization from valer reference " << std::endl;
+    std::cout << "Test initialization from valer reference:  ";
     double value=3.14;
     double error=2.72;
     valer <double &>  v(value,error);
     valer <double> r(v); //impicit conversion to double and then to valer  lost error
-    cout << r << endl;
     if( 3.14 == r.value && 2.72 == r.error) {
       cout << "v.value: 3.14  -> " << value << "  v.error: 2.72 -> " << error <<  " : OK " << endl ;
+    }
+    else { 
+      cout << " ERROR " << endl;
+      return 1;
     }
     r/=2.3;
   }
@@ -158,7 +170,25 @@ int main(int argc, char ** argv) {
     cout << (x-=1.0) << endl;
     cout << (x+=1.0) << endl;
     cout <<  (valer{1.3,0.3}^valer{1.1,0.5}) << endl;
-    cout <<  (valer{0.,0.3}^valer{1.1,0.5}) << endl;
+    cout <<  (valer{0.,0.3}^valer{2.1,0.5}) << endl;
+
+    valer a{2.0};
+    valer b{3.0};
+    valer c{1.0};
+    //auto z  = ~y;
+    valer<double>::type  zz;
+    cout << "zz = " << zz << endl;
+
+    valer a1 = {2.3,5.3};
+    cout << valer{5.6,8.3} << endl;
+    cout << valer{6,8} << endl;
+  }
+  {
+    std::vector< valer<double> > v;
+    for(int i=0;i<100;++i) {
+      v.push_back({sqrt(i),sqrt(sqrt(i))});
+    }
+    for(auto & x : v) cout << x << endl;
   }
 
   return 0;
