@@ -11,7 +11,7 @@
  *       Compiler:  gcc
  *
  *         Author:  Ivan B. Nikolaev (), I.B.Nikolaev@inp.nsk.su
- *        Company:  Budker Institute of Nuclear Physycs, Novosibirsk, Russia
+ *        Company:  Budker Institute of Nuclear Physics, Novosibirsk, Russia
  *
  * =====================================================================================
  */
@@ -23,63 +23,34 @@
 
 namespace ibn
 {
-  template < class T>
+  template <typename T>
   struct valer
   { 
     T value; //the value
     T error; //and the error
-    valer(void) {} // I dont know should i init valer or not
-    valer(const T & v) : value(v), error(0){}
-    valer(const T & v, const T & e): value(v), error(e) {}
+    constexpr valer(void)  = default; // I dont know should i init valer or not
+    constexpr valer(const T & v)              noexcept : value(v),       error(0)       {}
+    constexpr valer(const T & v, const T & e) noexcept : value(v),       error(e)       {}
+    constexpr valer(const valer<T> & v)       noexcept : value(v.value), error(v.error) {}
 
-    valer(double v) : value(v) { value = v;} 
-    operator double (void) const { return value; };
-    //valer & operator=(double v) { value = v; return *this;} 
+    //dont know why it doest work with const valer<T&> &
+    constexpr valer(valer<T&> & v)            noexcept : value(v.value), error(v.error) {}
 
-
-    struct reference
-    {
-      T & value, & error;
-      inline reference(T & v,T & e) : value(v), error(e) {} 
-      inline reference(valer <T> & v): value(v.value), error(v.error) {}
-      inline void operator=(valer <T> & pv) { value=pv.value; error = pv.error; }
-      inline void operator=(const valer <T> & pv) { value=pv.value; error = pv.error; }
-
-      inline reference & operator+=(const T & t) { value+=t; return *this;}
-      inline reference & operator-=(const T & t) { value-=t; return *this;}
-      inline reference & operator*=(const T & t) { value*=t; error*=t; return *this;}
-      inline reference & operator/=(const T & t) { value/=t; error/=t; return *this;}
-
-      inline reference & operator+=(const valer<T> & v) { *this=(valer<T>(*this)+=v); return *this;}
-      inline reference & operator-=(const valer<T> & v) { *this=(valer<T>(*this)-=v); return *this;}
-      inline reference & operator*=(const valer<T> & v) { *this=(valer<T>(*this)*=v); return *this;}
-      inline reference & operator/=(const valer<T> & v) { *this=(valer<T>(*this)/=v); return *this;}
-
-      inline valer<T> operator + (const T & y) { return valer<T>(*this)+=y; } 
-      inline valer<T> operator + (const reference & y) { return valer<T>(*this)+=valer<T>(y); } 
-      inline valer<T> operator * (const T & y) { return valer<T>(*this)*=y; } 
-      inline valer<T> operator * (const reference & y) { return valer<T>(*this)*=valer<T>(y); } 
-      inline valer<T> operator / (const T & y) { return valer<T>(*this)/=y; } 
-      inline valer<T> operator / (const reference & y) { return valer<T>(*this)/=valer<T>(y); } 
+    //assignment operators
+    constexpr valer<T> & operator=(const T & v) noexcept { 
+      value=v; 
+      error=0; 
+      return *this; 
     };
 
-    struct const_reference
-    {
-      const T & value, & error;
-      inline const_reference( const T & v, const T & e) : value(v), error(e) {} 
-      inline const_reference( const valer <T> & pv): value(pv.value), error(pv.error) {}
-      inline const_reference( const valer <T>::reference & pv): value(pv.value), error(pv.error) {}
-      inline const_reference( const const_reference & pv): value(pv.value), error(pv.error) {}
-    };
+    constexpr valer<T> & operator=(const valer<T> & v) noexcept { 
+      value=v.value; 
+      error=v.error;
+      return *this;
+    }
 
-    inline valer(const valer<T> & v): value(v.value), error(v.error){}
-    inline valer(const valer<T>::reference & v) : value(v.value), error(v.error) {}
-    inline valer(const valer<T>::const_reference & v): value(v.value), error(v.error) {}
-
-    inline void operator=(const T & v){value=v; error=0;}
-    inline void operator=(const valer<T> & v) { value=v.value; error=v.error;}
-    inline void operator=(const valer<T>::reference & v){ value=v.value; error=v.error;};
-    inline void operator=(const valer<T>::const_reference & v){ value=v.value; error=v.error;};
+    //implicit (narrowing) conversion to base type
+    constexpr operator T (void) const noexcept { return value; };
 
     inline valer <T>& operator+=(const T & x)
     {
@@ -94,7 +65,6 @@ namespace ibn
       return *this;
     }
 
-    
     inline valer <T>& operator-=(const T & x)
     {
       value-=x;
@@ -136,172 +106,41 @@ namespace ibn
       value/=x.value;
       return *this;
     }
-    //inline valer<T>& operator+=(const valer<T>::reference & x)
-    //{
-    //  return *this+=valer<T>(x);
-    //}
-
-    //inline valer<T> & operator+=(const valer<T>::const_reference & x)
-    //{
-    //  return *this+=valer<T>(x);
-    //}
-
-
-    //inline valer <T>& operator-=(const valer<T>::const_reference & x)
-    //{
-    //  return *this+=valer<T>(x);
-    //}
-
-    //inline valer <T> operator+(const valer <T> & x)
-    //{
-    //  valer <T> result(*this);
-    //  result+=x;
-    //  return result;
-    //}
-
-    //inline valer <T> operator+(const T & x)
-    //{
-    //  return *this+valer<T>(x);
-    //}
-
-    //inline valer <T> operator+(const valer_reference<T> & x)
-    //{
-    //  return *this+valer<T>(x);
-    //}
-
-    //inline valer <T>  operator+(const valer<T>::const_reference & x)
-    //{
-    //  return *this+valer<T>(x);
-    //}
-
-    //inline valer <T> operator-(const valer <T> & x)
-    //{
-    //  valer <T> result(*this);
-    //  result-=x;
-    //  return result;
-    //}
-
-    //inline valer <T>  operator-(const T & x)
-    //{
-    //  return *this-valer<T>(x);
-    //}
-
-
-    //inline valer <T>  operator-(const valer<T>::const_reference & x)
-    //{
-    //  valer <T> result(*this);
-    //  result-=x;
-    //  return result;
-    //  return *this-valer<T>(x);
-    //}
-    
 
 
 
-    //inline valer<T> & operator*=(const valer<T>::const_reference & x)
-    //{
-    //  return *this*=valer<T>(x);
-    //}
+    friend valer<T> operator + (const valer<T> & x, const valer<T> & y) noexcept { return (valer<T>(x) += y ); };
 
-    //inline valer <T> operator*(const valer <T> & x)
-    //{
-    //  valer <T> result(*this);
-    //  result*=x;
-    //  return result;
-    //}
+    friend valer<T> operator - (const valer<T> & x, const valer<T> & y) noexcept { return (valer<T>(x) -= y ); };
 
-    //inline valer <T>  operator*(const T & x)
-    //{
-    //  return *this*valer<T>(x);
-    //}
+    friend valer<T> operator * (const valer<T> & x, const valer<T> & y) noexcept { return (valer<T>(x) *= y ); };
+
+    friend valer<T> operator / (const valer<T> & x, const valer<T> & y) noexcept { return (valer<T>(x) /= y ); };
 
 
-    //inline valer <T>  operator*(const valer<T>::const_reference & x)
-    //{
-    //  valer <T> result(*this);
-    //  result*=x;
-    //  return result;
-    //  //return *this*valer<T>(x);
-    //}
+    friend valer<T> operator + (const T & x, const valer<T> & y) noexcept { return (valer<T>(x) += y ); };
+
+    friend valer<T> operator - (const T & x, const valer<T> & y) noexcept { return (valer<T>(x) -= y ); };
+
+    friend valer<T> operator * (const T & x, const valer<T> & y) noexcept { return (valer<T>(x) *= y ); };
+
+    friend valer<T> operator / (const T & x, const valer<T> & y) noexcept { return (valer<T>(x) /= y ); };
 
 
+    friend valer<T> operator + (const valer<T> & x, const T & y) noexcept { return (valer<T>(x) += y ); };
 
+    friend valer<T> operator - (const valer<T> & x, const T & y) noexcept { return (valer<T>(x) -= y ); };
 
-    //inline valer<T> & operator/=(const valer<T>::const_reference & x)
-    //{
-    //  return *this/=valer<T>(x);
-    //}
+    friend valer<T> operator * (const valer<T> & x, const T & y) noexcept { return (valer<T>(x) *= y ); };
 
-    //inline valer <T> operator/(const valer <T> & x)
-    //{
-    //  valer <T> result(*this);
-    //  result/=x;
-    //  return result;
-    //}
+    friend valer<T> operator / (const valer<T> & x, const T & y) noexcept { return (valer<T>(x) /= y ); };
 
-    //inline valer <T>  operator/(const T & x)
-    //{
-    //  return *this/valer<T>(x);
-    //}
-
-
-    //inline valer <T>  operator/(const valer<T>::const_reference & x)
-    //{
-    //  return *this/valer<T>(x);
-    //}
-
-    private:
+    friend valer<T> operator ^ (const valer<T> & x, const valer<T> & y) noexcept {
+      return { pow(x.value, y.value), 
+        sqrt(  pow( y.value * pow(x.value, y.value-1) * x.error, 2.0)  +
+               pow( log(x.value)*pow(x.value,y.value) ,2.0) ) };
+    }
   };
-
-
-  template <class T> inline valer<T> operator + (const valer<T> & x, const valer<T> & y) { return valer<T>(x)+=y; } 
-  template <class T> inline valer<T> operator - (const valer<T> & x, const valer<T> & y) { return valer<T>(x)-=y; }
-  template <class T> inline valer<T> operator * (const valer<T> & x, const valer<T> & y) { return valer<T>(x)*=y; } 
-  template <class T> inline valer<T> operator / (const valer<T> & x, const valer<T> & y) { return valer<T>(x)/=y; }
-
-  template <class T> inline valer<T> operator + (const valer<T> & x, const T & y) { return valer<T>(x)+=y; } 
-  template <class T> inline valer<T> operator - (const valer<T> & x, const T & y) { return valer<T>(x)-=y; }
-  template <class T> inline valer<T> operator * (const valer<T> & x, const T & y) { return valer<T>(x)*=y; } 
-  template <class T> inline valer<T> operator / (const valer<T> & x, const T & y) { return valer<T>(x)/=y; }
-
-  template <class T> inline valer<T> operator + (const T & x, const valer<T> & y) { return valer<T>(x)+=y; } 
-  template <class T> inline valer<T> operator - (const T & x, const valer<T> & y) { return valer<T>(x)-=y; }
-  template <class T> inline valer<T> operator * (const T & x, const valer<T> & y) { return valer<T>(y.value*x, y.error*x); } 
-  template <class T> inline valer<T> operator / (const T & x, const valer<T> & y) { return valer<T>(x)/=y; }
-
-
-  // reference operations
-  template <class T> inline valer<T> operator + (const valer<T> & x, const typename valer<T>::reference & y) { return valer<T>(x)+=y; } 
-  template <class T> inline valer<T> operator - (const valer<T> & x, const typename valer<T>::reference & y) { return valer<T>(x)-=y; }
-  template <class T> inline valer<T> operator * (const valer<T> & x, const typename valer<T>::reference & y) { return valer<T>(x)*=y; } 
-  template <class T> inline valer<T> operator / (const valer<T> & x, const typename valer<T>::reference & y) { return valer<T>(x)/=y; }
-
-  template <class T> inline valer<T> operator + (const typename valer<T>::reference & x, const valer<T> & y) { return valer<T>(x)+=y; } 
-  template <class T> inline valer<T> operator - (const typename valer<T>::reference & x, const valer<T> & y) { return valer<T>(x)-=y; }
-  template <class T> inline valer<T> operator * (const typename valer<T>::reference & x, const valer<T> & y) { return valer<T>(x)*=y; } 
-  template <class T> inline valer<T> operator / (const typename valer<T>::reference & x, const valer<T> & y) { return valer<T>(x)/=y; }
-
-  //template <class T> inline valer<T> operator + (const typename valer<T>::reference & x, const typename valer<T>::reference & y) { return valer<T>(x)+=y; } 
-  //template <class T> inline valer<T> operator - (const typename valer<T>::reference & x, const typename valer<T>::reference & y) { return valer<T>(x)-=y; }
-  //template <class T> inline valer<T> operator * (const typename valer<T>::reference & x, const typename valer<T>::reference & y) { return valer<T>(x)*=y; } 
-  template <class T> inline valer<T> operator / (typename valer<T>::reference  x, typename valer<T>::reference  y) { return valer<T>(x)/=y; }
-
-  template <class T> inline bool operator == (const valer<T> & x, const valer<T> & y) { return x.value == y.value; } 
-  template <class T> inline bool operator <  (const valer<T> & x, const valer<T> & y) { return x.value <  y.value; } 
-  template <class T> inline bool operator <= (const valer<T> & x, const valer<T> & y) { return x.value <= y.value; } 
-  template <class T> inline bool operator >  (const valer<T> & x, const valer<T> & y) { return x.value >  y.value; } 
-  template <class T> inline bool operator >= (const valer<T> & x, const valer<T> & y) { return x.value >= y.value; } 
-
-  template <class T> T sq ( const T & t ) { return t*t; }
-  template <class T> T cb ( const T & t ) { return t*t*t; }
-
-  template <class T>
-  inline valer <T> pow(const valer <T>& x, const valer<T> &p)
-  {
-    if(x.value==0.0) return 0;
-    if(p.value==0.0) return valer <T> (1.0, std::log(x.value)*p.error);
-    T r = std::pow(x.value, p.value);
-    return valer<T>( r,  sqrt( sq(x.error*p.value*r/x.value) + sq(p.error*std::log(x.value)*r)));
-  }
 }
+
 #endif //IBN_VALER_H
