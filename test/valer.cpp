@@ -8,6 +8,8 @@
 #include <typeinfo>
 #include <limits>
 #include <complex>
+#include <cassert>
+#include <sstream>
 
 template<typename T>
 std::ostream & operator << (std:: ostream & os,  const ibn::valer<T> & d) {
@@ -15,81 +17,396 @@ std::ostream & operator << (std:: ostream & os,  const ibn::valer<T> & d) {
   return os;
 };
 
+template<typename T>
+std::istream & operator >> (std:: istream & is,  ibn::valer<T> & d) {
+  is >> d.value >> d.error;
+  return is;
+};
+
+template<typename T>
+std::istream & operator >> (std:: istream & is,  ibn::valer<T&> && d) {
+  is >> d.value >> d.error;
+  return is;
+};
+
 template<typename T> using lim = std::numeric_limits<T>;
 
+static int width=50;
+static int check_number=0;
+
+template <typename type_t>
+void check_equality_and_print(std::string_view title, const ibn::valer<type_t> & v, typename std::remove_reference<type_t>::type const  & value, typename std::remove_reference<type_t>::type const    & error, std::string_view comment="") {
+  using type = typename std::remove_reference<type_t>::type;
+  bool ok = (value == v.value) && (v.error == error);
+  std::cout << std::setprecision(std::numeric_limits<type>::digits10+3);
+  std::cout << std::setw(5) << check_number << std::setw(width) << title <<":"<<  std::setw(10) << ( ok ? "OK" : "FAIL" ) << std::setw(width)  << v <<  "  " << comment << std::endl;
+  ++check_number;
+}
+
+//template <typename type_t, typename type= typename std::remove_reference<type_t>::type >
+//void check_equality_and_print(std::string_view title, const ibn::valer<type_t> & v, const type  & value, const type  & error, std::string_view comment="") {
+//  bool ok = (std::numeric_limits<type_t>::max() == v.value) && (v.error == error);
+//  if constexpr ( std::is_reference<type_t>::value)  {
+//    v.value=v.value/type(2);
+//    v.error=v.error*type(2);
+//    ok = ok && v.value == value && v.error == error;
+//    std::cout << "reference" << std::endl;
+//  }
+//  std::cout << std::setprecision(std::numeric_limits<type_t>::digits10+3);
+//  std::cout << std::setw(5) << check_number << std::setw(width) << title <<":"<<  std::setw(10) << ( ok ? "OK" : "FAIL" ) << std::setw(width)  << v <<  "  " << comment << std::endl;
+//  ++check_number;
+//}
+
+template <typename type_t>
+void check_constructor_from_sigle_literal(std::string_view title, std::string comment="") {}
+
+template<>
+void check_constructor_from_sigle_literal<char>(std::string_view title, std::string comment) {
+  using type_t = char;
+  ibn::valer <type_t> v(0x7f);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0),comment);
+}
+
+template<>
+void check_constructor_from_sigle_literal<int>(std::string_view title, std::string comment) {
+  using type_t = int;
+  ibn::valer <type_t> v(2147483647);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0),comment);
+}
+
+template<>
+void check_constructor_from_sigle_literal<long int>(std::string_view title, std::string comment) {
+  using type_t = long int;
+  ibn::valer <type_t> v(9223372036854775807);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0),comment);
+}
+
+template<>
+void check_constructor_from_sigle_literal<unsigned char>(std::string_view title, std::string comment) {
+  using type_t = unsigned char;
+  ibn::valer <type_t> v(0xff);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0),comment);
+}
+
+template<>
+void check_constructor_from_sigle_literal<unsigned int>(std::string_view title, std::string comment) {
+  using type_t = unsigned int;
+  ibn::valer <type_t> v(4294967295);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0),comment);
+}
+
+template<>
+void check_constructor_from_sigle_literal<unsigned long>(std::string_view title, std::string comment) {
+  using type_t = unsigned long;
+  ibn::valer <type_t> v(18446744073709551615U);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0),comment);
+}
+template<>
+void check_constructor_from_sigle_literal<float>(std::string_view title, std::string comment) {
+  using type_t = float;
+  ibn::valer <type_t> v(3.4028235e+38);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_constructor_from_sigle_literal<double>(std::string_view title, std::string comment) {
+  using type_t = double;
+  ibn::valer <type_t> v(1.79769313486231571e+308);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_constructor_from_sigle_literal<long double>(std::string_view title, std::string comment) {
+  using type_t = long double;
+  ibn::valer <type_t> v(1.18973149535723176502e+4932L);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+
+template <typename type_t>
+void check_constructor_from_sigle_type(std::string_view title, std::string comment="") {
+  type_t t{std::numeric_limits<type_t>::max()};
+  ibn::valer <type_t> v(t);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template <typename type_t>
+void check_aggregate_from_sigle_type(std::string_view title, std::string comment="") {
+  type_t t{std::numeric_limits<type_t>::max()};
+  ibn::valer <type_t> v{t};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template <>
+void check_constructor_from_sigle_type<std::complex<double>>(std::string_view title, std::string comment) {
+  using type_t = std::complex<double>;
+  type_t t(M_PI,M_E);
+  ibn::valer <type_t> v(t);
+  check_equality_and_print(title, v, {M_PI, M_E}, type_t(0), comment);
+}
+
+template<typename type_t>
+void check_aggregate_from_sigle_literal(std::string_view title, std::string comment="") {
+  //using type_t = char;
+  ibn::valer <type_t> v{0};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_aggregate_from_sigle_literal<char>(std::string_view title, std::string comment) {
+  using type_t = char;
+  ibn::valer <type_t> v{0x7f};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_aggregate_from_sigle_literal<int>(std::string_view title, std::string comment) {
+  using type_t = int;
+  ibn::valer <type_t> v{2147483647};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_aggregate_from_sigle_literal<long int>(std::string_view title, std::string comment) {
+  using type_t = long int;
+  ibn::valer <type_t> v{9223372036854775807};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_aggregate_from_sigle_literal<unsigned char>(std::string_view title, std::string comment) {
+  using type_t = unsigned char;
+  ibn::valer <type_t> v(0xff);
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_aggregate_from_sigle_literal<unsigned int>(std::string_view title, std::string comment) {
+  using type_t = unsigned int;
+  ibn::valer <type_t> v{4294967295};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_aggregate_from_sigle_literal<unsigned long>(std::string_view title, std::string comment) {
+  using type_t = unsigned long;
+  ibn::valer <type_t> v{18446744073709551615U};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+template<>
+void check_aggregate_from_sigle_literal<float>(std::string_view title, std::string comment) {
+  using type_t = float;
+  ibn::valer <type_t> v{3.4028235e+38};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_aggregate_from_sigle_literal<double>(std::string_view title, std::string comment) {
+  using type_t = double;
+  ibn::valer <type_t> v{1.79769313486231571e+308};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template<>
+void check_aggregate_from_sigle_literal<long double>(std::string_view title, std::string comment) {
+  using type_t = long double;
+  ibn::valer <type_t> v{1.18973149535723176502e+4932L};
+  check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
+}
+
+template <typename type_t>
+void check_constructor_from_type_type(std::string_view title, std::string comment="") {
+  using type = typename std::remove_cv<typename std::remove_reference<type_t>::type>::type;
+  type value{std::numeric_limits<type>::max()};
+  type error{std::numeric_limits<type>::min()};
+  ibn::valer <type_t> v(value,error);
+  check_equality_and_print<type_t>(title, v, std::numeric_limits<type>::max(), std::numeric_limits<type>::min(), comment);
+}
+template <typename type_t>
+void check_ref_constructor_from_type_type(std::string_view title, std::string comment="") {
+  using type = typename std::remove_cv<typename std::remove_reference<type_t>::type>::type;
+  type value{std::numeric_limits<type>::max()};
+  type error{std::numeric_limits<type>::min()};
+  ibn::valer <type_t> v(value,error);
+  v.value/=1024.;
+  v.error*=1024.;
+  check_equality_and_print<type_t>(title, v, value, error, comment);
+}
+template <typename type_t>
+void check_const_ref_constructor_from_type_type(std::string_view title, std::string comment="") {
+  using type = typename std::remove_cv<typename std::remove_reference<type_t>::type>::type;
+  type value{std::numeric_limits<type>::max()};
+  type error{std::numeric_limits<type>::min()};
+  ibn::valer <type_t> v(value,error);
+  value/=1024.;
+  error*=1024.;
+  check_equality_and_print<type_t>(title, v, value, error, comment);
+}
+
+template<typename T1, typename T2> 
+void check_sum(std::string_view title, std::string comment="") {
+  using type1 = typename ibn::valer<T1>::type;
+  using type2 = typename ibn::valer<T2>::type;
+  type1 val1 = 10;
+  type1 err1 = 1;
+  type1 val2 = 5;
+  type1 err2 = 2;
+
+  ibn::valer<T1> v1(val1,err1);
+  ibn::valer<T2> v2(val2,err2);
+  //std::cout << v1 << " " << v2 << std::endl;
+
+  auto value = val1+val2;
+  auto error = std::hypot(err1,err2);
+
+  auto result = v1+v2;
+  check_equality_and_print(title, result, value, error, comment);
+}
+
+template<typename T1, typename T2> 
+void check_sub(std::string_view title, std::string comment="") {
+  using type1 = typename ibn::valer<T1>::type;
+  using type2 = typename ibn::valer<T2>::type;
+  type1 val1 = 10;
+  type1 err1 = 1;
+  type1 val2 = 5;
+  type1 err2 = 2;
+
+  ibn::valer<T1> v1(val1,err1);
+  ibn::valer<T2> v2(val2,err2);
+  //std::cout << v1 << " " << v2 << std::endl;
+
+  auto value = val1-val2;
+  auto error = std::hypot(err1,err2);
+
+  auto result = v1-v2;
+  check_equality_and_print(title, result, value, error, comment);
+}
+
+template<typename T1, typename T2> 
+void check_mult(std::string_view title, std::string comment="") {
+  using type1 = typename ibn::valer<T1>::type;
+  using type2 = typename ibn::valer<T2>::type;
+  type1 val1 = 10;
+  type1 err1 = 1;
+  type1 val2 = 5;
+  type1 err2 = 2;
+
+  ibn::valer<T1> v1(val1,err1);
+  ibn::valer<T2> v2(val2,err2);
+  //std::cout << v1 << " " << v2 << std::endl;
+
+  auto value = val1*val2;
+  auto error = std::hypot(err1,err2);
+
+  auto result = v1*v2;
+  check_equality_and_print(title, result, value, error, comment);
+}
+
+template<typename T1, typename T2> 
+void check_div(std::string_view title, std::string comment="") {
+  using type1 = typename ibn::valer<T1>::type;
+  using type2 = typename ibn::valer<T2>::type;
+  type1 val1 = 10;
+  type1 err1 = 1;
+  type1 val2 = 5;
+  type1 err2 = 2;
+
+  ibn::valer<T1> v1(val1,err1);
+  ibn::valer<T2> v2(val2,err2);
+  //std::cout << v1 << " " << v2 << std::endl;
+
+  auto value = val1*val2;
+  auto error = std::hypot(err1,err2);
+
+  auto result = v1/v2;
+  check_equality_and_print(title, result, value, error, comment);
+}
 
 int main(int argc, char ** argv) {
   using namespace ibn;
   using namespace std;
 
-  cout << "Testing constructor from simple type " << endl;
-  {
-    cout << " from int: ";
-    using type_t  = int;
-    constexpr type_t t = M_PI;
-    constexpr valer<type_t> v(t);
-    static_assert( 3 == v.value &&  v.error == 0 );
-    cout << setprecision(lim<type_t>::digits10) << v << ":  OK " << endl;
-  }
-  {
-    cout << " from long int: ";
-    using type_t  = long int;
-    constexpr type_t t = std::numeric_limits<long int>::max();
-    constexpr valer<type_t> v(t);
-    static_assert( t == v.value &&  v.error == 0 );
-    cout << setprecision(lim<type_t>::digits10) << v << ":  OK " << endl;
-  }
-  {
-    cout << " from float: ";
-    using type_t  = float;
-    constexpr type_t t = M_PI;
-    constexpr valer<type_t> v(t);
-    static_assert( type_t(t) == v.value &&  v.error == 0 );
-    cout << setprecision(lim<type_t>::digits10) << v << ":  OK " << endl;
-  }
-  {
-    cout << " from double: ";
-    using type_t  = double;
-    constexpr type_t t = M_PI;
-    constexpr valer<type_t> v(t);
-    static_assert( type_t(t) == v.value &&  v.error == 0 );
-    cout << setprecision(lim<type_t>::digits10) << v << ":  OK " << endl;
-  }
-  {
-    cout << " from long double: ";
-    using type_t  = long double;
-    constexpr type_t t = M_PIl;
-    constexpr valer<type_t> v(t);
-    static_assert( type_t(t) == v.value &&  v.error == 0 );
-    cout << setprecision(lim<type_t>::digits10) << v << ":  OK " << endl;
-  }
+  //cout << "Testing constructor from simple type " << endl;
+  check_constructor_from_sigle_literal<char>                  ("valer<char>(literal char)");
+  check_constructor_from_sigle_literal<int>                   ("valer<int>(literal int)");
+  check_constructor_from_sigle_literal<long>                  ("valer<long>(literal long)");
+  check_constructor_from_sigle_literal<unsigned>              ("valer<unsinged>(literal unsigned)");
+  check_constructor_from_sigle_literal<unsigned long>         ("valer<unsinged long>(literal unsigned long)");
+  check_constructor_from_sigle_literal<float>                 ("valer<float>(literal float)");
+  check_constructor_from_sigle_literal<double>                ("valer<double>(literal double)");
+  check_constructor_from_sigle_literal<long double>           ("valer<long double>(literal long double)");
+  check_constructor_from_sigle_literal<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
 
-  cout << "Testing aggregate initializer" << endl;
-  {
-    cout << " from double: ";
-    using type_t  = double;
-    constexpr type_t t = M_PI;
-    constexpr valer<type_t> v{t,t};
-    static_assert( type_t(t) == v.value &&  v.error == type_t(t) );
-    cout << setprecision(lim<type_t>::digits10) << v << ":  OK " << endl;
-  }
+  check_constructor_from_sigle_type<char>                  ("valer<char>(char)");
+  check_constructor_from_sigle_type<int>                   ("valer<int>(int)");
+  check_constructor_from_sigle_type<long>                  ("valer<long>(long)");
+  check_constructor_from_sigle_type<unsigned>              ("valer<unsinged>(unsigned)");
+  check_constructor_from_sigle_type<unsigned long>         ("valer<unsinged long>(unsigned long)");
+  check_constructor_from_sigle_type<float>                 ("valer<float>(float)");
+  check_constructor_from_sigle_type<double>                ("valer<double>(double)");
+  check_constructor_from_sigle_type<long double>           ("valer<long double>(long double)");
+  check_constructor_from_sigle_type<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
 
-  valer v(5.3);
-  cout << v << endl;
-  valer v2 = 23.3;
-  valer v3 = 3;
-  cout << v2 << endl;
-  cout << typeid(v2.value).name() << endl;
+
+  cout << "Testing aggregate initializer from literal" << endl;
+
+  check_aggregate_from_sigle_literal<char>                  ("valer<char>{literal char}");
+  check_aggregate_from_sigle_literal<int>                   ("valer<int>{literal int}");
+  check_aggregate_from_sigle_literal<long>                  ("valer<long>{literal long}");
+  check_aggregate_from_sigle_literal<unsigned>              ("valer<unsinged>{literal unsigned}");
+  check_aggregate_from_sigle_literal<unsigned long>         ("valer<unsinged long>{literal unsigned long}");
+  check_aggregate_from_sigle_literal<float>                 ("valer<float>{literal float}");
+  check_aggregate_from_sigle_literal<double>                ("valer<double>{literal double}");
+  check_aggregate_from_sigle_literal<long double>           ("valer<long double>{literal long double}");
+  check_aggregate_from_sigle_literal<std::complex<double>>  ("valer<complex<double>>{complex<double>}");
+
+  check_aggregate_from_sigle_type<char>                  ("valer<char>(char)");
+  check_aggregate_from_sigle_type<int>                   ("valer<int>(int)");
+  check_aggregate_from_sigle_type<long>                  ("valer<long>(long)");
+  check_aggregate_from_sigle_type<unsigned>              ("valer<unsinged>(unsigned)");
+  check_aggregate_from_sigle_type<unsigned long>         ("valer<unsinged long>(unsigned long)");
+  check_aggregate_from_sigle_type<float>                 ("valer<float>(float)");
+  check_aggregate_from_sigle_type<double>                ("valer<double>(double)");
+  check_aggregate_from_sigle_type<long double>           ("valer<long double>(long double)");
+  check_aggregate_from_sigle_type<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
+
+  cout << "Testing constructor from (double, double)" << std::endl;
+  check_constructor_from_type_type<double>  ("valer<double>(float,float)");
+  check_ref_constructor_from_type_type<double&> ("valer<double&>(float,float)");
+  check_const_ref_constructor_from_type_type<const double&> ("valer<const double&>(float,float)");
+
+  check_sum<double,double>("valer<dobule> + valer<double>");
+  check_sum<double,double&>("valer<dobule> + valer<double&>");
+  check_sum<double&,double>("valer<dobule&> + valer<double>");
+  check_sum<double&,double&>("valer<dobule&> + valer<double&>");
+  check_sum<double,double const&>("valer<dobule> + valer<double const&>");
+  check_sum<double const &,double>("valer<dobule const &> + valer<double>");
+  check_sum<double const &,double const &>("valer<dobule const &> + valer<double const&>");
+  check_sum<double&,double const&>("valer<dobule&> + valer<double const&>");
+  check_sum<double const &,double&>("valer<dobule const &> + valer<double&>");
+
+
+  check_sub<double,double>("valer<dobule> - valer<double>");
+  check_sub<double,double&>("valer<dobule> - valer<double&>");
+  check_sub<double&,double>("valer<dobule&> - valer<double>");
+  check_sub<double&,double&>("valer<dobule&> - valer<double&>");
+  check_sub<double,double const&>("valer<dobule> - valer<double const&>");
+  check_sub<double const &,double>("valer<dobule const &> - valer<double>");
+  check_sub<double const &,double const &>("valer<dobule const &> - valer<double const&>");
+  check_sub<double&,double const&>("valer<dobule&> - valer<double const&>");
+  check_sub<double const &,double&>("valer<dobule const &> - valer<double&>");
+
   std::cout << "Test implicit conversion: " << std::endl;
   {
     cout << " to double: ";
     using type_t  = double;
     constexpr type_t t = M_PI;
-    constexpr valer<type_t> v{t,t};
+    valer<type_t> v{t,t};
     //static_assert( type_t(t) == v.value &&  v.error == type_t(t) );
     //cout << setprecision(lim<type_t>::digits10) << v << ":  OK " << endl;
-    constexpr type_t result = v;
-    static_assert( t == result );
+    type_t result = v;
+    assert( t == result );
     cout << result << " OK " << endl;
   }
 
@@ -99,18 +416,32 @@ int main(int argc, char ** argv) {
     using type_t  = complex<float>;
     cout << setprecision(lim<float>::digits10);
     constexpr type_t t = {M_PI, M_E};
-    constexpr valer<type_t> v{t,t};
-    constexpr type_t result = v;
-    static_assert( t == result );
+    valer<type_t> v{t,t};
+    type_t result = v;
+    assert( t == result );
     cout << v << "  -> " << result << " OK " << endl;
   }
 
-  std::cout << "Test reference: " << endl;
+  std::cout << "Test reference initialization: " << endl;
   {
-    std::cout << "  double, double " << std::endl;
+    std::cout << "  from {double, double} " << std::endl;
     double value=3.14;
     double error=2.72;
     valer <double &>  v{value,error};
+    //valer <double &>  v(value,error);
+    v.value *= 2;
+    v.error *= 3;
+    if( 3.14*2 == value && 2.72*3 == error) {
+      cout << "value: 3.14  -> " << value << "  error: 2.72 -> " << error <<  " : OK " << endl ;
+    }
+  }
+  {
+    std::cout << "  from {double&, double&} " << std::endl;
+    double value=3.14;
+    double error=2.72;
+    double &val =value;
+    double &err = error;
+    valer <double &>  v{val,err};
     //valer <double &>  v(value,error);
     v.value *= 2;
     v.error *= 3;
@@ -166,14 +497,14 @@ int main(int argc, char ** argv) {
     cout << 2.+x << endl;
     cout << x-2. << endl;
     cout << 2.-x << endl;
-    x={2,3};
+    x={2.,13.3};
     y={1,1};
     cout << (x*=3.0) << endl;
     cout << (x/=3.0) << endl;
     cout << (x-=1.0) << endl;
     cout << (x+=1.0) << endl;
-    cout <<  (valer{1.3,0.3}^valer{1.1,0.5}) << endl;
-    cout <<  (valer{0.,0.3}^valer{2.1,0.5}) << endl;
+    //cout <<  (valer{1.3,0.3}^valer{1.1,0.5}) << endl;
+    //cout <<  (valer{0.,0.3}^valer{2.1,0.5}) << endl;
 
     valer a{2.0};
     valer b{3.0};
@@ -188,13 +519,13 @@ int main(int argc, char ** argv) {
     valer<const double &> a2(a1);
     valer<double> a3(a2);
   }
-  {
-    std::vector< valer<double> > v;
-    for(int i=0;i<100;++i) {
-      v.push_back({sqrt(i),sqrt(sqrt(i))});
-    }
-    for(auto & x : v) cout << x << endl;
-  }
+  //{
+  //  std::vector< valer<double> > v;
+  //  for(int i=0;i<100;++i) {
+  //    v.push_back({sqrt(i),sqrt(sqrt(i))});
+  //  }
+  //  for(auto & x : v) cout << x << endl;
+  //}
   {
     cout << "Test for referece and values" << endl;
     double value=2.0;
@@ -208,6 +539,10 @@ int main(int argc, char ** argv) {
     cout << v*v << endl;
     cout << v/v2 << endl;
     cout << v2/v << endl;
+    const valer<double &> vv(value,error);
+    valer<double> zz;
+    //zz = vv;
+    //cout << zz << endl;
   }
   {
     auto  fun_const_ref = [](const ibn::valer<double> & v) {
@@ -234,6 +569,120 @@ int main(int argc, char ** argv) {
     fun_const_cref(vref);
     fun_const_cref(vcref);
   }
+
+  valer v0 = {2,3};
+  double x,y;
+  valer<double> v1 = {x, y};
+  valer<double&> v2 = {x, y};
+  valer<const double&> v3 = {x, y};
+  const valer<double> v4 = {x, y};
+  const valer<double&> v5 = {x, y};
+  const valer<const double&> v6 = {x, y};
+  valer<double> v7{x,y};
+
+  cout << "Check constructors: " << endl;
+  {
+    cout << " from (number leteral)" << endl;
+    valer<double> v1(3.14);
+    valer<const double> v2(3.14);
+    const valer<double> v3(3.14);
+    const valer<const double> v4(3.14);
+  }
+  {
+    cout << " from (number leteral , number literal)" << endl;
+    valer<double> v1(3.14,2.72);
+    valer<const double> v2(3.14,2.72);
+  }
+  {
+    cout << " from (value variable, value variable)" << endl;
+    double x = 3.1;
+    double y = 2.7;
+    valer<double> v1(x,y);
+    valer<const double> v2(x,y);
+    const valer<double> v3(x,y);
+    valer<double&> v4(x,y);
+    valer<const double&> v5(x,y);
+    const valer<double&> v6(x,y);
+    const valer<const double&> v7(x,y);
+  }
+  {
+    cout << " from valer<double> " << endl;
+    valer<double> v0(3.1,2.7);
+    valer<double> v1(v0);
+    valer<const double> v2(v0);
+    const valer<double> v3(v0);
+    valer<double&> v4(v0);
+    valer<const double&> v5(v0);
+    const valer<double&> v6(v0);
+    const valer<const double&> v7(v0);
+  }
+
+  {
+    cout << " from valer<double&> " << endl;
+    double x = 3.1;
+    double y = 2.7;
+    valer<double&> v0(x,y);
+    valer<double> v1(v0);
+    valer<const double> v2(v0);
+    const valer<double> v3(v0);
+    valer<double&> v4(v0);
+    valer<const double&> v5(v0);
+    const valer<double&> v6(v0);
+    const valer<const double&> v7(v0);
+  }
+
+  {
+    cout << " from valer<const double&> " << endl;
+    double x = 3.1;
+    double y = 2.7;
+    valer<const double&> v0(3.1,2.7);
+    valer<double> v1(v0);
+    valer<const double> v2(v0);
+    const valer<double> v3(v0);
+    //valer<double&> v4(v0);
+    valer<const double&> v5(v0);
+    //const valer<double&> v6(v0);
+    const valer<const double&> v7(v0);
+
+  }
+  //{
+  //  valer<double> v;
+  //  cin >> v ;
+  //  cout << v << endl;
+
+  //  double x{3.14},y{2.14};
+  //  valer<double &> v2(x,y);
+  //  cin >> v2;
+  //  cout << v2 << endl;
+  //  cout << " x = " <<  x << " y=" << y << endl;
+
+  //  std::istringstream iss("128.6 128.2");
+  //  iss >> v2;
+  //  cout << v2 << endl;
+  //  auto f = [](double &x, double &y) { return ibn::valer<double&>(x,y); };
+  //  iss >> f(x,y) ;
+  //}
+  //{
+  //  ibn::valer v = {23.,42.};
+  //  double x=1;
+  //  double y =2;
+  //  auto f = [](double &x, double &y) ->  ibn::valer<double&> { return ibn::valer<double&>(x,y); };
+  //  auto v2 = v - f(x,y);
+  //  cout << v2 << endl;
+  //  auto g = [](const ibn::valer<double> & v1, const ibn::valer<double> & v2) ->ibn::valer<double> {
+  //    return v1+v2;;
+  //  };
+
+  //  double &u = x;
+  //  auto z = g(u,f(x,y));
+  //  cout << z << endl;
+
+  //}
+
+
+
+
+
 
   return 0;
 };
