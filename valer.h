@@ -286,6 +286,7 @@ namespace ibn
                pow( log(x.value)*pow(x.value,y.value) ,2.0) ) };
     }
     */
+
   };
 
   /* Template class argument deduction guide */
@@ -305,6 +306,17 @@ namespace ibn
   template<class T>  valer( valer<T&> && ) -> valer<T>;
   template<class T>  valer( valer<const T&>  ) -> valer<T>;
   */
+
+
+  template<typename U>
+  valer<U> operator + (const U & y, const ibn::valer<U> & v)               noexcept { return {valer<U>(y) += v}; };
+  template<typename U>
+  valer<U> operator - (const U & y, const ibn::valer<U> & v)               noexcept { return {valer<U>(y) -= v}; };
+  template<typename U>
+  valer<U> operator * (const U & y, const ibn::valer<U> & v)               noexcept { return {valer<U>(y) *= v}; };
+  template<typename U>
+  valer<U> operator / (const U & y, const ibn::valer<U> & v)               noexcept { return {valer<U>(y) /= v}; };
+
 
 }
 

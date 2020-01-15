@@ -34,10 +34,19 @@ template<typename T> using lim = std::numeric_limits<T>;
 static int width=50;
 static int check_number=0;
 
+
+template<typename T1, typename T2>
+bool is_equal(const T1 & t1, const T2 & t2) {
+  using type = typename std::remove_cv< typename std::remove_reference<T2>::type >::type;
+  return std::fabs(t1-t2) <= std::numeric_limits<type>::epsilon();
+};
+
 template <typename type_t>
 void check_equality_and_print(std::string_view title, const ibn::valer<type_t> & v, typename std::remove_reference<type_t>::type const  & value, typename std::remove_reference<type_t>::type const    & error, std::string_view comment="") {
   using type = typename std::remove_reference<type_t>::type;
-  bool ok = (value == v.value) && (v.error == error);
+  //bool ok = (value == v.value) && (v.error == error);
+  //bool ok = fabs(value - v.value) <= std::numeric_limits<type>::epsilon()  && fabs(value - v.value) <= std::numeric_limits<type>::epsilon()
+  bool ok = is_equal(value, v.value) && is_equal(error, v.error);
   std::cout << std::setprecision(std::numeric_limits<type>::digits10+3);
   std::cout << std::setw(5) << check_number << std::setw(width) << title <<":"<<  std::setw(10) << ( ok ? "OK" : "FAIL" ) << std::setw(width)  << v <<  "  " << comment << std::endl;
   ++check_number;
@@ -137,6 +146,7 @@ void check_aggregate_from_sigle_type(std::string_view title, std::string comment
   check_equality_and_print(title, v, std::numeric_limits<type_t>::max(), type_t(0), comment);
 }
 
+/*
 template <>
 void check_constructor_from_sigle_type<std::complex<double>>(std::string_view title, std::string comment) {
   using type_t = std::complex<double>;
@@ -144,6 +154,7 @@ void check_constructor_from_sigle_type<std::complex<double>>(std::string_view ti
   ibn::valer <type_t> v(t);
   check_equality_and_print(title, v, {M_PI, M_E}, type_t(0), comment);
 }
+*/
 
 template<typename type_t>
 void check_aggregate_from_sigle_literal(std::string_view title, std::string comment="") {
@@ -222,6 +233,7 @@ void check_constructor_from_type_type(std::string_view title, std::string commen
   ibn::valer <type_t> v(value,error);
   check_equality_and_print<type_t>(title, v, std::numeric_limits<type>::max(), std::numeric_limits<type>::min(), comment);
 }
+
 template <typename type_t>
 void check_ref_constructor_from_type_type(std::string_view title, std::string comment="") {
   using type = typename std::remove_cv<typename std::remove_reference<type_t>::type>::type;
@@ -243,8 +255,19 @@ void check_const_ref_constructor_from_type_type(std::string_view title, std::str
   check_equality_and_print<type_t>(title, v, value, error, comment);
 }
 
+
+//template <typename type_t>
+//void check_constructor_from_ref_ref(std::string_view title, std::string comment="") {
+//  using type = typename std::remove_cv<typename std::remove_reference<type_t>::type>::type;
+//  type value{std::numeric_limits<type>::max()};
+//  type error{std::numeric_limits<type>::min()};
+//  ibn::valer <type & > v(value,error);
+//  check_equality_and_print<type_t>(title, v, std::numeric_limits<type>::max(), std::numeric_limits<type>::min(), comment);
+//}
+
+
 template<typename T1, typename T2> 
-void check_sum(std::string_view title, std::string comment="") {
+void check_sum(std::string_view title1, std::string_view title2, std::string comment="") {
   using type1 = typename ibn::valer<T1>::type;
   using type2 = typename ibn::valer<T2>::type;
   type1 val1 = 10;
@@ -259,12 +282,17 @@ void check_sum(std::string_view title, std::string comment="") {
   auto value = val1+val2;
   auto error = std::hypot(err1,err2);
 
+  std::ostringstream iss;
+  iss << std::setw(23) << std::right << title1;
+  iss << " + ";
+  iss << std::setw(23) << std::left  << title2;
+
   auto result = v1+v2;
-  check_equality_and_print(title, result, value, error, comment);
+  check_equality_and_print(iss.str(), result, value, error, comment);
 }
 
 template<typename T1, typename T2> 
-void check_sub(std::string_view title, std::string comment="") {
+void check_sub(std::string_view title1, std::string_view title2, std::string comment="") {
   using type1 = typename ibn::valer<T1>::type;
   using type2 = typename ibn::valer<T2>::type;
   type1 val1 = 10;
@@ -279,12 +307,17 @@ void check_sub(std::string_view title, std::string comment="") {
   auto value = val1-val2;
   auto error = std::hypot(err1,err2);
 
+  std::ostringstream iss;
+  iss  << std::setw(23) << std::right << title1;
+  iss << " - ";
+  iss  << std::setw(23) << std::left<< title2;
+
   auto result = v1-v2;
-  check_equality_and_print(title, result, value, error, comment);
+  check_equality_and_print(iss.str(), result, value, error, comment);
 }
 
 template<typename T1, typename T2> 
-void check_mult(std::string_view title, std::string comment="") {
+void check_mult(std::string_view title1, std::string_view title2, std::string comment="") {
   using type1 = typename ibn::valer<T1>::type;
   using type2 = typename ibn::valer<T2>::type;
   type1 val1 = 10;
@@ -297,14 +330,19 @@ void check_mult(std::string_view title, std::string comment="") {
   //std::cout << v1 << " " << v2 << std::endl;
 
   auto value = val1*val2;
-  auto error = std::hypot(err1,err2);
+  auto error = std::hypot(val1*err2, val2*err1);
+
+  std::ostringstream iss;
+  iss  << std::setw(23) << std::right << title1;
+  iss << " * ";
+  iss  << std::setw(23) << std::left<< title2;
 
   auto result = v1*v2;
-  check_equality_and_print(title, result, value, error, comment);
+  check_equality_and_print(iss.str(), result, value, error, comment);
 }
 
 template<typename T1, typename T2> 
-void check_div(std::string_view title, std::string comment="") {
+void check_div(std::string_view title1, std::string_view title2, std::string comment="") {
   using type1 = typename ibn::valer<T1>::type;
   using type2 = typename ibn::valer<T2>::type;
   type1 val1 = 10;
@@ -316,11 +354,129 @@ void check_div(std::string_view title, std::string comment="") {
   ibn::valer<T2> v2(val2,err2);
   //std::cout << v1 << " " << v2 << std::endl;
 
-  auto value = val1*val2;
-  auto error = std::hypot(err1,err2);
+  auto value = val1/val2;
+  auto error = value*std::hypot( err1/val1, err2/val2);
+
+  std::ostringstream iss;
+  iss  << std::setw(23) << std::right << title1;
+  iss << " / ";
+  iss  << std::setw(23) << std::left<< title2;
 
   auto result = v1/v2;
-  check_equality_and_print(title, result, value, error, comment);
+  check_equality_and_print(iss.str(), result, value, error, comment);
+}
+
+template<typename T> 
+void check_sum_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
+  using type1 = typename ibn::valer<T>::type;
+  type1 val1 = 10;
+  type1 err1 = 1;
+  ibn::valer<T> v1(val1,err1);
+
+  auto value = val1+3.1415;
+  auto error = err1;
+
+  std::ostringstream iss;
+  iss << std::setw(23) << std::right << title1;
+  iss << " + ";
+  iss << std::setw(23) << std::left  << title2;
+
+  auto result = v1 + 3.1415;
+  check_equality_and_print(iss.str(), result, value, error, comment);
+  //iss.clear();
+
+  std::ostringstream iss2;
+  iss2 << std::setw(23) << std::right << title2;
+  iss2 << " + ";
+  iss2 << std::setw(23) << std::left  << title1;
+  auto result2 = 3.1415 + v1;
+  check_equality_and_print(iss2.str(), result2, value, error, comment);
+}
+
+template<typename T> 
+void check_sub_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
+  using type1 = typename ibn::valer<T>::type;
+  type1 val1 = 10;
+  type1 err1 = 1;
+  ibn::valer<T> v1(val1,err1);
+
+  auto value = val1-3.1415;
+  auto error = err1;
+
+  std::ostringstream iss;
+  iss << std::setw(23) << std::right << title1;
+  iss << " - ";
+  iss << std::setw(23) << std::left  << title2;
+
+  auto result = v1 - 3.1415;
+  check_equality_and_print(iss.str(), result, value, error, comment);
+  //iss.clear();
+
+  std::ostringstream iss2;
+  iss2 << std::setw(23) << std::right << title2;
+  iss2 << " - ";
+  iss2 << std::setw(23) << std::left  << title1;
+  value = 3.1415  - val1;
+  auto result2 = 3.1415 - v1;
+  check_equality_and_print(iss2.str(), result2, value, error, comment);
+}
+
+template<typename T> 
+void check_mult_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
+  using type1 = typename ibn::valer<T>::type;
+  type1 val1 = 10;
+  type1 err1 = 1;
+  ibn::valer<T> v1(val1,err1);
+
+  auto value = val1*3.1415;
+  auto error = err1*3.1415;
+
+  std::ostringstream iss;
+  iss << std::setw(23) << std::right << title1;
+  iss << " * ";
+  iss << std::setw(23) << std::left  << title2;
+
+  auto result = v1 * 3.1415;
+  check_equality_and_print(iss.str(), result, value, error, comment);
+  //iss.clear();
+
+  std::ostringstream iss2;
+  iss2 << std::setw(23) << std::right << title2;
+  iss2 << " * ";
+  iss2 << std::setw(23) << std::left  << title1;
+  auto result2 = 3.1415 * v1;
+  check_equality_and_print(iss2.str(), result2, value, error, comment);
+}
+
+
+template<typename T> 
+void check_div_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
+  using type1 = typename ibn::valer<T>::type;
+  type1 val1 = 10;
+  type1 err1 = 6.3;
+  ibn::valer<T> v1(val1,err1);
+
+  auto value = val1/3.1415;
+  auto error = err1/3.1415;
+
+  std::ostringstream iss;
+  iss << std::setw(23) << std::right << title1;
+  iss << " / ";
+  iss << std::setw(23) << std::left  << title2;
+
+  auto result = v1 / 3.1415;
+  check_equality_and_print(iss.str(), result, value, error, comment);
+  //iss.clear();
+
+  std::ostringstream iss2;
+  iss2 << std::setw(23) << std::right << title2;
+  iss2 << " / ";
+  iss2 << std::setw(23) << std::left  << title1;
+  value = 3.1415/val1;
+  error = value*err1/val1;
+  //std::cout << error << std::endl;
+  auto result2 = 3.1415/v1;
+  check_equality_and_print(iss2.str(), result2, value, error, comment);
 }
 
 int main(int argc, char ** argv) {
@@ -336,7 +492,7 @@ int main(int argc, char ** argv) {
   check_constructor_from_sigle_literal<float>                 ("valer<float>(literal float)");
   check_constructor_from_sigle_literal<double>                ("valer<double>(literal double)");
   check_constructor_from_sigle_literal<long double>           ("valer<long double>(literal long double)");
-  check_constructor_from_sigle_literal<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
+  //check_constructor_from_sigle_literal<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
 
   check_constructor_from_sigle_type<char>                  ("valer<char>(char)");
   check_constructor_from_sigle_type<int>                   ("valer<int>(int)");
@@ -346,7 +502,7 @@ int main(int argc, char ** argv) {
   check_constructor_from_sigle_type<float>                 ("valer<float>(float)");
   check_constructor_from_sigle_type<double>                ("valer<double>(double)");
   check_constructor_from_sigle_type<long double>           ("valer<long double>(long double)");
-  check_constructor_from_sigle_type<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
+  //check_constructor_from_sigle_type<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
 
 
   cout << "Testing aggregate initializer from literal" << endl;
@@ -359,7 +515,7 @@ int main(int argc, char ** argv) {
   check_aggregate_from_sigle_literal<float>                 ("valer<float>{literal float}");
   check_aggregate_from_sigle_literal<double>                ("valer<double>{literal double}");
   check_aggregate_from_sigle_literal<long double>           ("valer<long double>{literal long double}");
-  check_aggregate_from_sigle_literal<std::complex<double>>  ("valer<complex<double>>{complex<double>}");
+  //check_aggregate_from_sigle_literal<std::complex<double>>  ("valer<complex<double>>{complex<double>}");
 
   check_aggregate_from_sigle_type<char>                  ("valer<char>(char)");
   check_aggregate_from_sigle_type<int>                   ("valer<int>(int)");
@@ -369,33 +525,62 @@ int main(int argc, char ** argv) {
   check_aggregate_from_sigle_type<float>                 ("valer<float>(float)");
   check_aggregate_from_sigle_type<double>                ("valer<double>(double)");
   check_aggregate_from_sigle_type<long double>           ("valer<long double>(long double)");
-  check_aggregate_from_sigle_type<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
+  //check_aggregate_from_sigle_type<std::complex<double>>  ("valer<complex<double>>(complex<double>)");
 
-  cout << "Testing constructor from (double, double)" << std::endl;
-  check_constructor_from_type_type<double>  ("valer<double>(float,float)");
-  check_ref_constructor_from_type_type<double&> ("valer<double&>(float,float)");
-  check_const_ref_constructor_from_type_type<const double&> ("valer<const double&>(float,float)");
+  //cout << "Testing constructor from (double, double)" << std::endl;
+  check_constructor_from_type_type<double>  ("valer<double>(double,double)");
+  check_ref_constructor_from_type_type<double&> ("valer<double&>(double,double)");
+  check_const_ref_constructor_from_type_type<const double&> ("valer<const double&>(double,double)");
 
-  check_sum<double,double>("valer<dobule> + valer<double>");
-  check_sum<double,double&>("valer<dobule> + valer<double&>");
-  check_sum<double&,double>("valer<dobule&> + valer<double>");
-  check_sum<double&,double&>("valer<dobule&> + valer<double&>");
-  check_sum<double,double const&>("valer<dobule> + valer<double const&>");
-  check_sum<double const &,double>("valer<dobule const &> + valer<double>");
-  check_sum<double const &,double const &>("valer<dobule const &> + valer<double const&>");
-  check_sum<double&,double const&>("valer<dobule&> + valer<double const&>");
-  check_sum<double const &,double&>("valer<dobule const &> + valer<double&>");
+  check_sum<double,double>                         ("valer <dobule>", "valer <double>");
+  check_sum<double,double&>                        ("valer <dobule>", "valer <double &>");
+  check_sum<double&,double>                      ("valer <dobule &>", "valer <double>");
+  check_sum<double&,double&>                     ("valer <dobule &>", "valer <double &>");
+  check_sum<double,double const&>                  ("valer <dobule>", "valer <double const &>");
+  check_sum<double const &,double>         ("valer <dobule const &>", "valer <double>");
+  check_sum<double const &,double const &> ("valer <dobule const &>", "valer <double const &>");
+  check_sum<double&,double const&>               ("valer <dobule &>", "valer <double const &>");
+  check_sum<double const &,double&>        ("valer <dobule const &>", "valer <double &>");
 
 
-  check_sub<double,double>("valer<dobule> - valer<double>");
-  check_sub<double,double&>("valer<dobule> - valer<double&>");
-  check_sub<double&,double>("valer<dobule&> - valer<double>");
-  check_sub<double&,double&>("valer<dobule&> - valer<double&>");
-  check_sub<double,double const&>("valer<dobule> - valer<double const&>");
-  check_sub<double const &,double>("valer<dobule const &> - valer<double>");
-  check_sub<double const &,double const &>("valer<dobule const &> - valer<double const&>");
-  check_sub<double&,double const&>("valer<dobule&> - valer<double const&>");
-  check_sub<double const &,double&>("valer<dobule const &> - valer<double&>");
+  check_sub<double,double>                         ("valer <dobule>", "valer<double>");
+  check_sub<double,double&>                        ("valer <dobule>", "valer<double &>");
+  check_sub<double&,double>                      ("valer <dobule &>", "valer<double>");
+  check_sub<double&,double&>                     ("valer <dobule &>", "valer<double &>");
+  check_sub<double,double const&>                  ("valer <dobule>", "valer<double const &>");
+  check_sub<double const &,double>         ("valer <dobule const &>", "valer<double>");
+  check_sub<double const &,double const &> ("valer <dobule const &>", "valer<double const &>");
+  check_sub<double&,double const&>               ("valer <dobule &>", "valer<double const &>");
+  check_sub<double const &,double&>        ("valer <dobule const &>", "valer<double &>");
+
+
+  check_mult<double,double>                        ("valer <dobule>", "valer <double>");
+  check_mult<double,double&>                       ("valer <dobule>", "valer <double &>");
+  check_mult<double&,double>                     ("valer <dobule &>", "valer <double>");
+  check_mult<double&,double&>                    ("valer <dobule &>", "valer <double &>");
+  check_mult<double,double const&>                 ("valer <dobule>", "valer <double const &>");
+  check_mult<double const &,double>        ("valer <dobule const &>", "valer <double>");
+  check_mult<double const &,double const &>("valer <dobule const &>", "valer <double const &>");
+  check_mult<double&,double const&>              ("valer <dobule &>", "valer <double const &>");
+  check_mult<double const &,double&>       ("valer <dobule const &>", "valer <double &>");
+
+
+  check_div<double,double>                         ("valer <dobule>","valer <double>");
+  check_div<double,double&>                        ("valer <dobule>","valer <double &>");
+  check_div<double&,double>                      ("valer <dobule &>","valer <double>");
+  check_div<double&,double&>                     ("valer <dobule &>","valer <double &>");
+  check_div<double,double const&>                  ("valer <dobule>","valer <double const &>");
+  check_div<double const &,double>         ("valer <dobule const &>","valer <double>");
+  check_div<double const &,double const &> ("valer <dobule const &>","valer <double const &>");
+  check_div<double&,double const&>               ("valer <dobule &>","valer <double const &>");
+  check_div<double const &,double&>        ("valer <dobule const &>","valer <double &>");
+
+
+  check_sum_with_literal<double>                   ("valer <dobule>", "literal double");
+  check_sub_with_literal<double>                   ("valer <dobule>", "literal double");
+  check_mult_with_literal<double>                  ("valer <dobule>", "literal double");
+  check_div_with_literal<double>                   ("valer <dobule>", "literal double");
+
 
   std::cout << "Test implicit conversion: " << std::endl;
   {
@@ -492,7 +677,7 @@ int main(int argc, char ** argv) {
     //cout << x/2.0 << endl;
     //cout << x*2.0 << endl;
     cout << 2.0*x << endl;
-    cout << 3.*x << endl;
+    cout << x*3.0 << endl;
     cout << x+2. << endl;
     cout << 2.+x << endl;
     cout << x-2. << endl;
