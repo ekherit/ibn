@@ -73,19 +73,53 @@ namespace ibn
       return *this; 
     };
 
+    template<typename T2>
+    constexpr valer<T> & operator=(const valer<T2> & v) noexcept { 
+//      std::cout << " operator = (const veler<type> &v)" << std::endl;
+      value=v.value; 
+      error=v.error;
+      return *this;
+    }
+
+    /*
     constexpr valer<T> & operator=(const valer<type> & v) noexcept { 
 //      std::cout << " operator = (const veler<type> &v)" << std::endl;
       value=v.value; 
       error=v.error;
       return *this;
     }
-    //constexpr valer<T> & operator=(valer<type> && v) noexcept { 
-//    //  std::cout << " operator = (const veler<type> &v)" << std::endl;
-    //  value=v.value; 
-    //  error=v.error;
-    //  return *this;
-    //}
 
+    constexpr valer<T> & operator=(const valer<type&> & v) noexcept { 
+//      std::cout << " operator = (const veler<type&> &v)" << std::endl;
+      value=v.value; 
+      error=v.error;
+      return *this;
+    }
+    */
+    template<std::size_t N>
+    constexpr valer<T> & operator=(const type(&v)[N]) noexcept { 
+      static_assert(N == 2, "Must be value and error");
+//      std::cout << " operator = (const std::initializer_list<type> &v)" << std::endl;
+      value = v[0];
+      error = v[1];
+      return *this;
+    }
+
+    template<typename T2>
+    constexpr valer<T> & operator=(valer<T2> & v) noexcept { 
+      value=v.value; 
+      error=v.error;
+      return *this;
+    }
+
+    template<typename T2>
+    constexpr valer<T> & operator=(valer<T2> && v) noexcept { 
+      value=v.value; 
+      error=v.error;
+      return *this;
+    }
+
+/*
     constexpr valer<T> & operator=(valer<type> & v) noexcept { 
 //      std::cout << "operator=(  veler<type> &v)" << std::endl;
       value=v.value; 
@@ -99,12 +133,15 @@ namespace ibn
       error=v.error;
       return *this;
     }
-    constexpr valer<T> & operator=(const valer<type&> & v) noexcept { 
-//      std::cout << " operator = (const veler<type&> &v)" << std::endl;
-      value=v.value; 
-      error=v.error;
-      return *this;
-    }
+    */
+
+
+    //constexpr valer<T> & operator=(valer<type> && v) noexcept { 
+//    //  std::cout << " operator = (const veler<type> &v)" << std::endl;
+    //  value=v.value; 
+    //  error=v.error;
+    //  return *this;
+    //}
 
     //constexpr valer<T> & operator=(const std::initializer_list<type> & l) noexcept { 
     //  assert(l.size() == 2, "Must be value and error in brace initializer list");
@@ -117,17 +154,6 @@ namespace ibn
     //  //error=v.error;
     //  return *this;
     //}
-
-
-
-    template<std::size_t N>
-    constexpr valer<T> & operator=(const type(&v)[N]) noexcept { 
-      static_assert(N == 2, "Must be value and error");
-//      std::cout << " operator = (const std::initializer_list<type> &v)" << std::endl;
-      value = v[0];
-      error = v[1];
-      return *this;
-    }
 
     //constexpr valer<T> & operator=(const valer<const type&> & v) noexcept { 
     //  value=v.value; 
@@ -161,11 +187,13 @@ namespace ibn
       return *this;
     }
 
-    inline valer <T>& operator+=(const valer <type> & x) {
+    template <typename T2>
+    inline valer <T>& operator+=(const valer <T2> & x) {
       error=sqrt(error*error + x.error*x.error);
       value+=x.value;
       return *this;
     }
+    /*
 
     inline valer <T>& operator+=(const valer <type &> & x) {
       error=sqrt(error*error + x.error*x.error);
@@ -178,18 +206,21 @@ namespace ibn
       value+=x.value;
       return *this;
     }
+    */
 
     inline valer <T>& operator-=(const T & x) {
       value-=x;
       return *this;
     }
 
-    inline valer <T>& operator-=(const valer <type> & x) {
+    template <typename T2>
+    inline valer <T>& operator-=(const valer <T2> & x) {
       error=sqrt(error*error + x.error*x.error);
       value-=x.value;
       return *this;
     }
 
+    /*
     inline valer <T>& operator-=(const valer <type &> & x) {
       error=sqrt(error*error + x.error*x.error);
       value-=x.value;
@@ -201,6 +232,7 @@ namespace ibn
       value-=x.value;
       return *this;
     }
+    */
 
     inline valer <T>& operator*=(const T & x) {
       value*=x;
@@ -208,6 +240,13 @@ namespace ibn
       return *this;
     }
 
+    template <typename T2>
+    inline valer <T> & operator*=(const valer <T2> & x) {
+      error=sqrt(error*error*x.value*x.value + value*value*x.error*x.error);
+      value*=x.value;
+      return *this;
+    }
+    /*
     inline valer <T> & operator*=(const valer <type> & x) {
       error=sqrt(error*error*x.value*x.value + value*value*x.error*x.error);
       value*=x.value;
@@ -225,12 +264,22 @@ namespace ibn
       value*=x.value;
       return *this;
     }
+    */
 
     inline valer <T>& operator/=(const T & x) {
       value/=x;
       error/=x;
       return *this;
     }
+
+    template<typename T2>
+    inline valer <T> & operator/=(const valer <T2> & x) {
+      T x2=x.value*x.value;
+      error=sqrt(error*error/x2 + value*value/(x2*x2)*x.error*x.error);
+      value/=x.value;
+      return *this;
+    }
+    /*
 
     inline valer <T> & operator/=(const valer <type> & x) {
       T x2=x.value*x.value;
@@ -252,6 +301,7 @@ namespace ibn
       value/=x.value;
       return *this;
     }
+    */
 
     inline valer<T> & operator-(void) noexcept {
       value = - value;
@@ -269,7 +319,8 @@ namespace ibn
     valer<type> operator - (const valer<type&> & y)       noexcept { return {valer<type>(*this) -= y}; };
     valer<type> operator - (const valer<type const&> & y) noexcept { return {valer<type>(*this) -= y}; };
 
-    valer<type> operator * (const type & y)               noexcept { return {valer<type>(*this) *= y}; };
+    template<typename T2, typename R = typename std::common_type<type,T2>::type >
+    valer<R> operator * (const T2 & y)                    noexcept { return {valer<R>(value,error) *= y}; };
     valer<type> operator * (const valer<type> & y)        noexcept { return {valer<type>(*this) *= y}; };
     valer<type> operator * (const valer<type&> & y)       noexcept { return {valer<type>(*this) *= y}; };
     valer<type> operator * (const valer<type const&> & y) noexcept { return {valer<type>(*this) *= y}; };
@@ -307,15 +358,54 @@ namespace ibn
   template<class T>  valer( valer<const T&>  ) -> valer<T>;
   */
 
+  template<typename T1,typename T2>
+  bool operator<( const valer<T1> & v1, const valer<T2> & v2) {
+    return v1.value < v2.value;
+  }
 
-  template<typename U>
-  valer<U> operator + (const U & y, const ibn::valer<U> & v)               noexcept { return {valer<U>(y) += v}; };
-  template<typename U>
-  valer<U> operator - (const U & y, const ibn::valer<U> & v)               noexcept { return {valer<U>(y) -= v}; };
-  template<typename U>
-  valer<U> operator * (const U & y, const ibn::valer<U> & v)               noexcept { return {valer<U>(y) *= v}; };
-  template<typename U>
-  valer<U> operator / (const U & y, const ibn::valer<U> & v)               noexcept { return {valer<U>(y) /= v}; };
+  template<typename T1,typename T2>
+  bool operator<=( const valer<T1> & v1, const valer<T2> & v2) {
+    return v1.value <= v2.value;
+  }
+
+  template<typename T1,typename T2>
+  bool operator>( const valer<T1> & v1, const valer<T2> & v2) {
+    return v1.value > v2.value;
+  }
+
+  template<typename T1,typename T2>
+  bool operator>=( const valer<T1> & v1, const valer<T2> & v2) {
+    return v1.value >= v2.value;
+  }
+
+  template<typename T1,typename T2>
+  bool operator==( const valer<T1> & v1, const valer<T2> & v2) {
+    return v1.value == v2.value;
+  }
+
+  template<typename T1,typename T2>
+  bool operator!=( const valer<T1> & v1, const valer<T2> & v2) {
+    return !(v1.value == v2.value);
+  }
+
+  template<typename T1, typename T2, typename R = typename std::common_type<T1,T2>::type >
+  valer<R> operator + (const T1 & y, const ibn::valer<T2> & v)             noexcept  { return {valer<R>(y) += v}; };
+
+  //template<typename U>
+  template<typename T1, typename T2, typename R = typename std::common_type<T1,T2>::type >
+  valer<R> operator - (const T1 & y, const ibn::valer<T2> & v)               noexcept { return {valer<R>(y) -= v}; };
+
+  template<typename T1, typename T2, typename R = typename std::common_type<T1,T2>::type >
+  valer<R> operator * (const T1 & y, const ibn::valer<T2> & v)               noexcept { return valer<R>(y) *= v; };
+  //valer<R> operator * (const T1 & y, const ibn::valer<T2> & v)               noexcept { std::cout << "*" << std::endl; return valer<R>(y) *= v; };
+
+  //template<typename U>
+  template<typename T1, typename T2, typename R = typename std::common_type<T1,T2>::type >
+  valer<R> operator / (const T1 & y, const ibn::valer<T2> & v)               noexcept { return {valer<R>(y) /= v}; };
+
+//  //template<typename U>
+//  template<typename T1, typename T2, typename R = typename std::common_type<T1,T2>::type >
+//  valer<R> operator + (const T1 & y, const ibn::valer<T2> & v)               noexcept { return {valer<R>(y) += v}; };
 
 
 }

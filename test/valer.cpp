@@ -448,6 +448,24 @@ void check_mult_with_literal(std::string_view title1, std::string_view title2, s
   check_equality_and_print(iss2.str(), result2, value, error, comment);
 }
 
+//template <typename type_t>
+//void check_cmp(std::string_view title1, std::string_view title2, std::string_view oper,   std::string_view comment="") {
+//  using type = typename std::remove_reference<type_t>::type;
+//  //bool ok = (value == v.value) && (v.error == error);
+//  //bool ok = fabs(value - v.value) <= std::numeric_limits<type>::epsilon()  && fabs(value - v.value) <= std::numeric_limits<type>::epsilon()
+//  bool ok = is_equal(value, v.value) && is_equal(error, v.error);
+//  std::cout << std::setprecision(std::numeric_limits<type>::digits10+3);
+//  std::cout << std::setw(5) << check_number << std::setw(width) << title <<":"<<  std::setw(10) << ( ok ? "OK" : "FAIL" ) << std::setw(width)  << v <<  "  " << comment << std::endl;
+//  ++check_number;
+//}
+
+//template<typename T1, typename T2> 
+//void check_comparison(const ibn::valer<T1> &v1, const ibn::valer<T2> &v2, std::string_view title1, std::string_view title2, std::string comment="") {
+//  std::
+//}
+
+
+
 
 template<typename T> 
 void check_div_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
@@ -703,6 +721,15 @@ int main(int argc, char ** argv) {
     cout << valer{6,8} << endl;
     valer<const double &> a2(a1);
     valer<double> a3(a2);
+    std::cout <<  (a<b) << std::endl;
+    std::cout <<  (b<a) << std::endl;
+    std::cout <<  (a<=b) << std::endl;
+    std::cout <<  (b<=a) << std::endl;
+    std::cout <<  (a==b) << std::endl;
+    std::cout <<  (a>b) << std::endl;
+    std::cout <<  (b>a) << std::endl;
+    std::cout <<  (a>=b) << std::endl;
+    std::cout <<  (b>=a) << std::endl;
   }
   //{
   //  std::vector< valer<double> > v;
@@ -863,11 +890,18 @@ int main(int argc, char ** argv) {
   //  cout << z << endl;
 
   //}
-
-
-
-
-
+  {
+    valer v1{2.3,1.0};
+    valer v2{3,1};
+    cout << (v1 <= valer{3.0,2.3} ) << endl;
+    cout << 2+v1 << endl;
+    cout << 2*v1 << endl;
+    cout << v1*3 << endl;
+    cout << v2*3 << endl;
+    cout << 3*v2 << endl;
+    cout << v2*3. << endl;
+    cout << 3.3*v2 << endl;
+  }
 
   return 0;
 };
