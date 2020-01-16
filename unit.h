@@ -216,28 +216,44 @@ struct unit
   using field=Field;
   using type = unit<dimension, Field>;
   unit(Field f) noexcept: data(f){} 
-  unit(unit  & t)       noexcept : data(t.data) {}
-  unit(unit  && t)      noexcept : data(t.data) {}
-  unit(const unit  & t) noexcept : data(t.data) {}
+  //unit(unit  & t)       noexcept : data(t.data) {}
+  //unit(unit  && t)      noexcept : data(t.data) {}
+  unit(const unit  & t) = default;
   unit(void) : data(1.0){};
 
-  friend type operator*(const field & f, const type  & t) noexcept { return {f*t.data}; }
-  friend type operator*(const  type & t, const field & f) noexcept { return {t.data*f}; }
+  //type & operator=(unit && t) = default;
+  //type & operator=(unit & t) = default;
+  //type & operator=(const unit && t) = default;
+  type & operator=(const unit & t) = default;
+
+  constexpr friend type operator*(const field & f, const type  & t) noexcept { return {f*t.data}; }
+  constexpr friend type operator*(const  type & t, const field & f) noexcept { return {t.data*f}; }
+
+  constexpr friend type operator+(const type & t1, const type & t2) noexcept { return {t1.data + t2.data}; }
+  constexpr friend type operator-(const type & t1, const type & t2) noexcept { return {t1.data - t2.data}; }
+
+  constexpr friend type operator/(const type & t, const field & f) { return {t.data/f}; }
+  constexpr friend auto operator/(const field & f, const type & t) -> typename Inverse<dimension>::type { return {f/t.data}; }
+
+  constexpr type & operator+=(const type & t) { data+=t.data; return *this; }
+
+
+  constexpr friend bool operator<(const type & t1, const type &t2) {
+    return t1.data < t2.data;
+  }
+  constexpr friend bool operator>(const type & t1, const type &t2) {
+    return t1.data > t2.data;
+  }
+
+  constexpr friend type operator-(const type & t1) { return {-t1.data}; }
+
 
   
-  friend type operator+(const type & t1, const type & t2) noexcept { return {t1.data + t2.data}; }
-  friend type operator-(const type & t1, const type & t2) noexcept { return {t1.data - t2.data}; }
 
-  friend type operator/(const type & t, const field & f) { return {t.data/f}; }
-  friend auto operator/(const field & f, const type & t) -> typename Inverse<dimension>::type { return {f/t.data}; }
-
-
-  
-
-  operator typename std::conditional< is_dimensionless<dimension>::value, field, type>::type () { return data; };
+  constexpr operator typename std::conditional< is_dimensionless<dimension>::value, field, type>::type () { return data; };
 
   template<int Num,int Den=1>
-  auto pow(void) -> unit<typename Power<dimension, Num, Den>::type,field>
+  constexpr auto pow(void) -> unit<typename Power<dimension, Num, Den>::type,field>
   { 
     return static_cast<field>(::pow(static_cast<double>(data),static_cast<double>(Num)/Den));
   };

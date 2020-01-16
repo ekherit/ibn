@@ -16,26 +16,32 @@
  * =====================================================================================
  */
 
-#include "../new_unit.h"
+#include "../unit.h"
+#include "../unit_print.h"
+#include <iostream>
+#include "flight.h"
+#include <chrono>
+using namespace ibn;
+using namespace std;
+using namespace std::chrono;
+
 int main(int argc,char ** argv)
 {
-  using Length_t = make_unit<0>;
-  using Mass_t  = make_unit<1>;
-  using Time_t = make_unit<2>;
-  auto m = Length_t(); //meter
-  auto s = Time_t(); //second
-  auto kg = Mass_t(); //kilogramm
+  const double x0 = 0;
+  const double y0 = 0;
 
-  using Velocity_t = decltype(m/s);
-  using Acceleration_t = decltype(Velocity_t()/s);
-  using Force_t = decltype(m*Acceleration_t());
+  const double vx0 = 20;
+  const double vy0 = 20;
 
-  //Environment parametrs
-  const Acceleration_t g = 9.80665*(m/s/s);
-  const auto rho = 1.2754*kg/(m*m*m);
+  const double dt = 1e-8;
 
-  //body parameters
-  const Mass_t M = 1.0*kg;
-  const auto S = 0.1*m*0.1*m; //Front cross section
+  auto t0{steady_clock::now()};
+  flight<make_unit<0>, make_unit<1>, make_unit<2>> (x0,y0,vx0,vy0, dt);
+  auto t1{steady_clock::now()};
+  std::cout << "unit: " << duration_cast<duration<double>>(t1-t0).count() << "s" << endl;
 
+  t0=steady_clock::now();
+  flight<double, double, double> (x0,y0,vx0,vy0, dt);
+  t1=steady_clock::now();
+  std::cout << "double: " << duration_cast<duration<double>>(t1-t0).count() << "s" << endl;
 };

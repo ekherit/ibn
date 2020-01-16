@@ -124,6 +124,9 @@ int main()
   std::cout << "test 4 = "  << test4() << std::endl;
   auto test5 = keV.pow<1,3>();
   std::cout << "test 5 = "  << test5.data << " " << decltype(test5)::dimension() << std::endl;
+  std::cout << "test 5 = "  << test5 << std::endl;
+  std::cout << "keV*keV*2.23 = "  << keV*keV*2.23 << std::endl;
+  std::cout << "J/keV = "  << J/keV << std::endl;
   //for(auto i : mm)
   //{
   //  std::cout << i.first << "   " << i.second << "  " << bitset<8>(i.first) << std::endl;
