@@ -448,6 +448,8 @@ void check_mult_with_literal(std::string_view title1, std::string_view title2, s
   check_equality_and_print(iss2.str(), result2, value, error, comment);
 }
 
+
+
 //template <typename type_t>
 //void check_cmp(std::string_view title1, std::string_view title2, std::string_view oper,   std::string_view comment="") {
 //  using type = typename std::remove_reference<type_t>::type;
@@ -495,6 +497,28 @@ void check_div_with_literal(std::string_view title1, std::string_view title2, st
   //std::cout << error << std::endl;
   auto result2 = 3.1415/v1;
   check_equality_and_print(iss2.str(), result2, value, error, comment);
+}
+
+void check_increment_decrement(std::string_view title, std::string_view comment="") {
+  double value = 1.1;
+  double error = 2.2;
+  ibn::valer<double> v{value,error};
+
+  ++v;
+  std::string s = "++" + std::string(title);
+  check_equality_and_print(s, v, value+1,error,comment);
+
+  --v;
+  s = "--" + std::string(title);
+  check_equality_and_print(s, v, value,error,comment);
+
+  v++;
+  s = std::string(title)+"++";
+  check_equality_and_print(s, v, value+1,error,comment);
+
+  v--;
+  s = std::string(title)+"--";
+  check_equality_and_print(s, v, value,error,comment);
 }
 
 int main(int argc, char ** argv) {
@@ -598,6 +622,8 @@ int main(int argc, char ** argv) {
   check_sub_with_literal<double>                   ("valer <dobule>", "literal double");
   check_mult_with_literal<double>                  ("valer <dobule>", "literal double");
   check_div_with_literal<double>                   ("valer <dobule>", "literal double");
+
+  check_increment_decrement               ("valer<double>");
 
 
   std::cout << "Test implicit conversion: " << std::endl;
@@ -901,6 +927,7 @@ int main(int argc, char ** argv) {
     cout << 3*v2 << endl;
     cout << v2*3. << endl;
     cout << 3.3*v2 << endl;
+    cout << v1 << endl;
   }
 
   return 0;

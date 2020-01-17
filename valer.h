@@ -46,6 +46,14 @@ namespace ibn
     constexpr valer(      type &  v,       type &  e)  noexcept : value(v),       error(e)       {print("type &v, type &e");}
     constexpr valer(      type && v,       type && e)  noexcept : value(v),       error(e)       {print("type&&v, type&&e");}
 
+    /*
+    template<typename T2>
+    constexpr valer(const T2 & v, const T2 &e)  noexcept : value(v), error(e) {}
+
+    template<typename T2>
+    constexpr valer(T2 && v, T2 &&e)  noexcept : value(v), error(e) {}
+    */
+
     constexpr valer(const valer<type> & v)             noexcept : value(v.value), error(v.error) {print("const valer<type> &v");}
     constexpr valer(valer<type> & v)                   noexcept : value(v.value), error(v.error) {print("valer<type> &v");}
     constexpr valer(valer<type> && v)                  noexcept : value(v.value), error(v.error) {print("valer<type> &&v");}
@@ -97,7 +105,7 @@ namespace ibn
     template<std::size_t N>
     constexpr valer<T> & operator=(const type(&v)[N]) noexcept { 
       static_assert(N == 2, "Must be value and error");
-//      std::cout << " operator = (const std::initializer_list<type> &v)" << std::endl;
+      std::cout << " operator = (const std::initializer_list<type> &v)" << std::endl;
       value = v[0];
       error = v[1];
       return *this;
@@ -335,6 +343,27 @@ namespace ibn
                pow( log(x.value)*pow(x.value,y.value) ,2.0) ) };
     }
     */
+
+    constexpr valer<T> & operator++(void) noexcept { 
+      ++value;
+      return *this;
+    }
+    constexpr valer<T> & operator--(void) noexcept { 
+      --value;
+      return *this;
+    }
+
+    constexpr valer<T>  operator++(int) noexcept { 
+      valer<type> tmp(*this);
+      ++value;
+      return std::move(tmp);
+    }
+
+    constexpr valer<T>  operator--(int) noexcept { 
+      valer<type> tmp(*this);
+      --value;
+      return std::move(tmp);
+    }
 
   };
 
