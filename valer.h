@@ -81,7 +81,6 @@ namespace ibn
       return *this;
     }
 
-    /*
     constexpr valer<T> & operator=(const valer<type> & v) noexcept { 
 //      std::cout << " operator = (const veler<type> &v)" << std::endl;
       value=v.value; 
@@ -95,7 +94,6 @@ namespace ibn
       error=v.error;
       return *this;
     }
-    */
     template<std::size_t N>
     constexpr valer<T> & operator=(const type(&v)[N]) noexcept { 
       static_assert(N == 2, "Must be value and error");

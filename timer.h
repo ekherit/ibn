@@ -28,6 +28,7 @@ namespace ibn
 {
   class timer
   {
+    using clock = std::chrono::steady_clock;
     public:
       timer(void)  {restart();};
 
@@ -46,7 +47,15 @@ namespace ibn
         return std::chrono::duration_cast<std::chrono::duration<double> >(clock::now()-begin_time).count();
       }
 
-      //timeval get_begin_time(void) const { return begin_time; }
+      void set_begin_time(std::chrono::system_clock::time_point t) 
+      {
+        system_start_time=t;
+      }
+
+      std::chrono::system_clock::time_point get_begin_time(void) const 
+      { 
+        return system_start_time; 
+      }
 
       //void set_begin_time(timeval t) 
       //{
@@ -54,9 +63,9 @@ namespace ibn
       //}
 
     private:
-      using clock = std::chrono::steady_clock;
       //timeval begin_time;	
       clock::time_point  begin_time;
+      std::chrono::system_clock::time_point system_start_time;
   };
 
   class sleep
