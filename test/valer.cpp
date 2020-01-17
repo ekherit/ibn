@@ -521,6 +521,19 @@ void check_increment_decrement(std::string_view title, std::string_view comment=
   check_equality_and_print(s, v, value,error,comment);
 }
 
+void check_operator_minus(std::string_view title, std::string_view comment) {
+  double value = 1.1;
+  double error = 2.2;
+  ibn::valer<double> v{value,error};
+  check_equality_and_print("-valer<dobule>", -v, -value,error,comment);
+
+  ibn::valer<double&> v2{value,error};
+  check_equality_and_print("-valer<dobule&>", -v, -value,error,comment);
+
+  ibn::valer<const double&> v3{value,error};
+  check_equality_and_print("-valer<const dobule&>", -v, -value, error,comment);
+}
+
 int main(int argc, char ** argv) {
   using namespace ibn;
   using namespace std;
@@ -624,6 +637,7 @@ int main(int argc, char ** argv) {
   check_div_with_literal<double>                   ("valer <dobule>", "literal double");
 
   check_increment_decrement               ("valer<double>");
+  check_operator_minus("","");
 
 
   std::cout << "Test implicit conversion: " << std::endl;

@@ -309,8 +309,8 @@ namespace ibn
     }
     */
 
-    inline valer<T> & operator-(void) noexcept {
-      value = - value;
+    inline valer<type>  operator-(void) {
+      return {-value,error};
     }
 
 
@@ -364,7 +364,6 @@ namespace ibn
       --value;
       return std::move(tmp);
     }
-
   };
 
   /* Template class argument deduction guide */
