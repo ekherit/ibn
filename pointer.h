@@ -9,7 +9,7 @@ struct raw_pointer {
   using type = T*;
   type pointer;
   constexpr raw_pointer(T * ptr) : pointer(ptr) {}
-  constexpr type operator()(T * ptr) const { return ptr; }
+  constexpr operator type(void) const { return pointer; }
   constexpr T & operator*() { return *pointer; }
   constexpr const T & operator*() const { return *pointer; }
 };
