@@ -244,6 +244,8 @@ void check_ref_constructor_from_type_type(std::string_view title, std::string co
   v.error*=1024.;
   check_equality_and_print<type_t>(title, v, value, error, comment);
 }
+
+
 template <typename type_t>
 void check_const_ref_constructor_from_type_type(std::string_view title, std::string comment="") {
   using type = typename std::remove_cv<typename std::remove_reference<type_t>::type>::type;
@@ -268,8 +270,8 @@ void check_const_ref_constructor_from_type_type(std::string_view title, std::str
 
 template<typename T1, typename T2> 
 void check_sum(std::string_view title1, std::string_view title2, std::string comment="") {
-  using type1 = typename ibn::valer<T1>::type;
-  using type2 = typename ibn::valer<T2>::type;
+  using type1 = typename ibn::valer<T1>::base_type;
+  using type2 = typename ibn::valer<T2>::base_type;
   type1 val1 = 10;
   type1 err1 = 1;
   type1 val2 = 5;
@@ -293,8 +295,8 @@ void check_sum(std::string_view title1, std::string_view title2, std::string com
 
 template<typename T1, typename T2> 
 void check_sub(std::string_view title1, std::string_view title2, std::string comment="") {
-  using type1 = typename ibn::valer<T1>::type;
-  using type2 = typename ibn::valer<T2>::type;
+  using type1 = typename ibn::valer<T1>::base_type;
+  using type2 = typename ibn::valer<T2>::base_type;
   type1 val1 = 10;
   type1 err1 = 1;
   type1 val2 = 5;
@@ -318,8 +320,8 @@ void check_sub(std::string_view title1, std::string_view title2, std::string com
 
 template<typename T1, typename T2> 
 void check_mult(std::string_view title1, std::string_view title2, std::string comment="") {
-  using type1 = typename ibn::valer<T1>::type;
-  using type2 = typename ibn::valer<T2>::type;
+  using type1 = typename ibn::valer<T1>::base_type;
+  using type2 = typename ibn::valer<T2>::base_type;
   type1 val1 = 10;
   type1 err1 = 1;
   type1 val2 = 5;
@@ -343,8 +345,8 @@ void check_mult(std::string_view title1, std::string_view title2, std::string co
 
 template<typename T1, typename T2> 
 void check_div(std::string_view title1, std::string_view title2, std::string comment="") {
-  using type1 = typename ibn::valer<T1>::type;
-  using type2 = typename ibn::valer<T2>::type;
+  using type1 = typename ibn::valer<T1>::base_type;
+  using type2 = typename ibn::valer<T2>::base_type;
   type1 val1 = 10;
   type1 err1 = 1;
   type1 val2 = 5;
@@ -368,7 +370,7 @@ void check_div(std::string_view title1, std::string_view title2, std::string com
 
 template<typename T> 
 void check_sum_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
-  using type1 = typename ibn::valer<T>::type;
+  using type1 = typename ibn::valer<T>::base_type;
   type1 val1 = 10;
   type1 err1 = 1;
   ibn::valer<T> v1(val1,err1);
@@ -395,7 +397,7 @@ void check_sum_with_literal(std::string_view title1, std::string_view title2, st
 
 template<typename T> 
 void check_sub_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
-  using type1 = typename ibn::valer<T>::type;
+  using type1 = typename ibn::valer<T>::base_type;
   type1 val1 = 10;
   type1 err1 = 1;
   ibn::valer<T> v1(val1,err1);
@@ -423,7 +425,7 @@ void check_sub_with_literal(std::string_view title1, std::string_view title2, st
 
 template<typename T> 
 void check_mult_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
-  using type1 = typename ibn::valer<T>::type;
+  using type1 = typename ibn::valer<T>::base_type;
   type1 val1 = 10;
   type1 err1 = 1;
   ibn::valer<T> v1(val1,err1);
@@ -471,7 +473,7 @@ void check_mult_with_literal(std::string_view title1, std::string_view title2, s
 
 template<typename T> 
 void check_div_with_literal(std::string_view title1, std::string_view title2, std::string comment="") {
-  using type1 = typename ibn::valer<T>::type;
+  using type1 = typename ibn::valer<T>::base_type;
   type1 val1 = 10;
   type1 err1 = 6.3;
   ibn::valer<T> v1(val1,err1);
@@ -753,7 +755,7 @@ int main(int argc, char ** argv) {
     valer b{3.0};
     valer c{1.0};
     //auto z  = ~y;
-    valer<double>::type  zz;
+    valer<double>::base_type  zz;
     cout << "zz = " << zz << endl;
 
     valer a1 = {2.3,5.3};
@@ -942,6 +944,11 @@ int main(int argc, char ** argv) {
     cout << v2*3. << endl;
     cout << 3.3*v2 << endl;
     cout << v1 << endl;
+  }
+  {
+    double v=3.14;
+    double e=0.1; 
+    //valer v1{&v,&e};
   }
 
   return 0;

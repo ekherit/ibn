@@ -1,4 +1,4 @@
-PROGRAM = unit combinator averager  benchmark_dimension_unit  natural_number integer_number opt2 benchmark_double valer pointer
+PROGRAM = unit combinator averager  benchmark_dimension_unit  natural_number integer_number opt2 benchmark_double valer pointer phys_constant
 all : $(PROGRAM) 
 
 CPP_FILES := $(foreach f, $(PROGRAM), $(f).cpp)

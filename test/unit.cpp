@@ -131,4 +131,6 @@ int main()
   //{
   //  std::cout << i.first << "   " << i.second << "  " << bitset<8>(i.first) << std::endl;
   //}
+  auto bbb = 1.234234/J;
+  std::cout << "1/J = " << bbb << std::endl;
 }
