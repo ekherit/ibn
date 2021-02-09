@@ -233,7 +233,7 @@ struct unit
   constexpr friend type operator-(const type & t1, const type & t2) noexcept { return {t1.data - t2.data}; }
 
   constexpr friend type operator/(const type & t, const field & f) { return {t.data/f}; }
-  constexpr friend auto operator/(const field & f, const type & t) -> typename Inverse<dimension>::type { return {f/t.data}; }
+  constexpr friend auto operator/(const field & f, const type & t) -> unit<typename Inverse<dimension>::type, field> { return f/t.data; }
 
   constexpr type & operator+=(const type & t) { data+=t.data; return *this; }
 
